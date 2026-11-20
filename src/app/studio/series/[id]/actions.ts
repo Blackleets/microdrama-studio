@@ -285,3 +285,64 @@ export async function generateEpisodeScript(formData: FormData) {
   revalidatePath(`/studio/series/${seriesId}`);
   redirect(`/studio/series/${seriesId}?script=saved`);
 }
+
+
+export async function submitEpisodeForReview(formData: FormData) {
+  const seriesId = textField(formData, "seriesId", 80);
+  const episodeId = textField(formData, "episodeId", 80);
+  if (!seriesId || !episodeId) redirect("/studio");
+  const { supabase } = await ownerClient();
+  const { data: script, error: scriptError } = await supabase.from("scripts")
+    .select("id").eq("episode_id", episodeId).order("version", { ascending: false }).limit(1).maybeSingle();
+  if (scriptError) fail(seriesId, "review-check");
+  if (!script) fail(seriesId, "review-no-script");
+  const { error } = await supabase.from("episodes").update({ status: "review" })
+    .eq("id", episodeId).eq("series_id", seriesId);
+  if (error) fail(seriesId, "review-submit");
+  revalidatePath(`/studio/series/${seriesId}`);
+  redirect(`/studio/series/${seriesId}?review=submitted`);
+}
+
+export async function approveEpisodePackage(formData: FormData) {
+  const seriesId = textField(formData, "seriesId", 80);
+  const episodeId = textField(formData, "episodeId", 80);
+  if (!seriesId || !episodeId) redirect("/studio");
+  const { supabase, ownerId } = await ownerClient();
+  const { data: episode, error: episodeError } = await supabase.from("episodes")
+    .select("id,status").eq("id", episodeId).eq("series_id", seriesId).single();
+  if (episodeError || !episode || episode.status !== "review") fail(seriesId, "review-state");
+  const { data: script } = await supabase.from("scripts")
+    .select("id").eq("episode_id", episodeId).order("version", { ascending: false }).limit(1).maybeSingle();
+  if (!script) fail(seriesId, "review-no-script");
+  const { error: approvalError } = await supabase.from("approvals").insert({
+    owner_id: ownerId, episode_id: episodeId, decision: "approved",
+    notes: "Paquete narrativo aprobado por el propietario.",
+  });
+  if (approvalError) fail(seriesId, "review-approval");
+  const { error } = await supabase.from("episodes").update({
+    status: "approved", approved_at: new Date().toISOString(),
+  }).eq("id", episodeId).eq("series_id", seriesId);
+  if (error) fail(seriesId, "review-state");
+  revalidatePath(`/studio/series/${seriesId}`);
+  redirect(`/studio/series/${seriesId}?approved=1`);
+}
+
+export async function requestEpisodeChanges(formData: FormData) {
+  const seriesId = textField(formData, "seriesId", 80);
+  const episodeId = textField(formData, "episodeId", 80);
+  const notes = textField(formData, "notes", 2000);
+  if (!seriesId || !episodeId || notes.length < 3) fail(seriesId, "review-notes");
+  const { supabase, ownerId } = await ownerClient();
+  const { data: episode, error: episodeError } = await supabase.from("episodes")
+    .select("id,status").eq("id", episodeId).eq("series_id", seriesId).single();
+  if (episodeError || !episode || episode.status !== "review") fail(seriesId, "review-state");
+  const { error: approvalError } = await supabase.from("approvals").insert({
+    owner_id: ownerId, episode_id: episodeId, decision: "changes_requested", notes,
+  });
+  if (approvalError) fail(seriesId, "review-approval");
+  const { error } = await supabase.from("episodes").update({ status: "development" })
+    .eq("id", episodeId).eq("series_id", seriesId);
+  if (error) fail(seriesId, "review-state");
+  revalidatePath(`/studio/series/${seriesId}`);
+  redirect(`/studio/series/${seriesId}?changes=requested`);
+}
