@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MicroDrama Studio — Production OS",
-  description: "AI-powered micro-series production and streaming platform.",
+  title: "MicroDrama — Microseries verticales",
+  description: "Descubre historias verticales. Un universo de microseries y producción original.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
