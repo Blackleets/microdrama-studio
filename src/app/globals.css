@@ -10,3 +10,8 @@ button,a{ -webkit-tap-highlight-color:transparent }
 .panel{background:linear-gradient(145deg,#151923,#10131a);border:1px solid var(--line);border-radius:16px}
 .muted{color:var(--muted)}
 .pill{border:1px solid #343a49;border-radius:999px;padding:5px 10px;font-size:11px;letter-spacing:.04em}
+.field{display:block;width:100%;background:#090b10;border:1px solid #303644;border-radius:11px;padding:12px 14px;color:#f4f5f8;font-size:12px;outline:none;resize:vertical}
+.field:focus{border-color:#d6ff63}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:#d6ff63;color:#11150a;border-radius:9px;padding:10px 13px;font-size:11px;font-weight:700}
+.btn-secondary{display:inline-flex;align-items:center;gap:7px;border:1px solid #343b4b;color:#b8c0ce;border-radius:9px;padding:9px 12px;font-size:10px}
+.icon-btn{width:32px;height:32px;border:1px solid #343b4b;border-radius:8px;display:grid;place-items:center;color:#d6ff63}
