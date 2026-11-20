@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, Play, Plus, Check, ChevronRight, Heart, X, Clapperboard, Sparkles, Flame, Compass, Bookmark, Volume2, Subtitles, LockKeyhole, ArrowLeft, Film } from "lucide-react";
+import { Search, Play, Plus, Check, ChevronRight, X, Clapperboard, Sparkles, Flame, Bookmark, Subtitles, LockKeyhole, Film } from "lucide-react";
 
 type Show = {id:string;title:string;tagline:string;genre:string;episodes:number;minutes:string;badge:string;colors:string[];symbol:string;description:string;cast:string[];episodeTitles:string[]};
 const shows:Show[]=[
@@ -16,7 +16,7 @@ export default function StreamingApp(){
  const [tab,setTab]=useState<Tab>("Para ti");
  const [query,setQuery]=useState("");
  const [favorites,setFavorites]=useState<string[]>([]);
- const [selected,setSelected]=useState<Show|null>(null);
+ const [selected,setSelected]=useState<Show | null>(null);
  const [playing,setPlaying]=useState(false);
  const [episode,setEpisode]=useState(0);
  const [hydrated,setHydrated]=useState(false);
