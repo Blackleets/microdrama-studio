@@ -1,8 +1,8 @@
-export const dynamic = "force-dynamic";
-
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import StudioDashboard from "./studio-dashboard";
+
+export const dynamic = "force-dynamic";
 
 export default async function StudioPage() {
   const supabase = await createClient();
