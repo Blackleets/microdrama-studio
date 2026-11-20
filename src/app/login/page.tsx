@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signIn, signUp } from "./actions";
+import { signIn } from "./actions";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<Record<string,string|undefined>> }) {
   const params = await searchParams;
@@ -30,16 +30,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <label className="block text-xs text-[#aeb4c0]">Contraseña<input name="password" type="password" required autoComplete="current-password" className="mt-2 w-full rounded-xl bg-[#11141c] border border-[#303644] px-4 py-3 text-sm outline-none focus:border-[#d6ff63]" placeholder="••••••••••"/></label>
             <button className="w-full rounded-xl bg-[#d6ff63] text-[#11150a] font-bold py-3 text-sm">Iniciar sesión</button>
           </form>
-          <div className="my-7 border-t border-[#252a36]"/>
-          <details className="group">
-            <summary className="cursor-pointer text-sm text-[#aeb4c0]">¿Primera vez? Crear cuenta de propietario</summary>
-            <form action={signUp} className="mt-4 space-y-3">
-              <input name="email" type="email" required autoComplete="email" placeholder="Correo electrónico" className="w-full rounded-xl bg-[#11141c] border border-[#303644] px-4 py-3 text-sm outline-none focus:border-[#d6ff63]"/>
-              <input name="password" type="password" required minLength={10} autoComplete="new-password" placeholder="Contraseña (mínimo 10 caracteres)" className="w-full rounded-xl bg-[#11141c] border border-[#303644] px-4 py-3 text-sm outline-none focus:border-[#d6ff63]"/>
-              <button className="w-full rounded-xl border border-[#424a5a] py-3 text-sm font-semibold">Crear cuenta</button>
-            </form>
-          </details>
-          <p className="text-[10px] text-[#687080] mt-8">El registro queda sujeto a la configuración de autenticación del proyecto Supabase.</p>
+          <p className="text-[10px] text-[#687080] mt-8">El acceso se habilita desde la consola privada de Supabase. No existe registro público en este estudio.</p>
         </div>
       </section>
     </main>
