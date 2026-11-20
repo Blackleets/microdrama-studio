@@ -144,3 +144,86 @@ export async function addScene(formData: FormData) {
   revalidatePath(`/studio/series/${seriesId}`);
   redirect(`/studio/series/${seriesId}?scene=created`);
 }
+
+
+export async function generateEpisodeScript(formData: FormData) {
+  const seriesId = textField(formData, "seriesId", 80);
+  const episodeId = textField(formData, "episodeId", 80);
+  const brief = textField(formData, "creativeBrief", 4000);
+  if (!seriesId || !episodeId) redirect("/studio");
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) fail(seriesId, "ai-not-configured");
+
+  const { supabase, ownerId } = await ownerClient();
+  const [{ data: series, error: seriesError }, { data: episode, error: episodeError }, { data: bible }, { data: characters }] = await Promise.all([
+    supabase.from("series").select("title,logline,genre,language,visual_style").eq("id", seriesId).single(),
+    supabase.from("episodes").select("id,episode_number,title,synopsis").eq("id", episodeId).eq("series_id", seriesId).single(),
+    supabase.from("story_bibles").select("premise,world_rules,tone_and_style,narrative_arc").eq("series_id", seriesId).eq("is_current", true).maybeSingle(),
+    supabase.from("characters").select("name,description,continuity_notes").eq("series_id", seriesId).limit(30),
+  ]);
+  if (seriesError || episodeError || !series || !episode) fail(seriesId, "ai-context");
+
+  const prompt = [
+    "Actúa como showrunner y guionista profesional especializado en microseries verticales.",
+    "Escribe en español un episodio breve de ficción serializada pensado para móvil en formato vertical 9:16.",
+    "Entrega un guion filmable, no un resumen. Duración objetivo: 60 a 120 segundos.",
+    "Estructura: cold open potente en los primeros 3 segundos; escenas numeradas; encabezado INT./EXT., lugar y momento; acción visual concreta; diálogo natural; ritmo ágil; giro o cliffhanger final que impulse el siguiente episodio.",
+    "No inventes cambios que contradigan la biblia o la continuidad de personajes. Si falta información, toma decisiones creativas coherentes y no añadas explicaciones fuera del guion.",
+    "FORMATO DE SALIDA: título del episodio, duración estimada, después escenas con encabezado, acción, personajes y diálogo. Termina en un cliffhanger.",
+    "",
+    "SERIE: " + series.title,
+    "LOGLINE: " + (series.logline || ""),
+    "GÉNERO: " + (series.genre || []).join(", "),
+    "ESTILO VISUAL: " + series.visual_style,
+    "PREMISA: " + (bible?.premise || ""),
+    "REGLAS DEL UNIVERSO: " + JSON.stringify(bible?.world_rules || {}),
+    "TONO Y ESTILO: " + JSON.stringify(bible?.tone_and_style || {}),
+    "ARCO NARRATIVO: " + JSON.stringify(bible?.narrative_arc || {}),
+    "PERSONAJES Y CONTINUIDAD: " + JSON.stringify(characters || []),
+    "EPISODIO " + episode.episode_number + ": " + episode.title,
+    "SINOPSIS / GANCHO: " + (episode.synopsis || ""),
+    "INDICACIONES DEL CREADOR: " + (brief || "Desarrolla el episodio respetando la continuidad y dejando un cliffhanger potente."),
+  ].join("\n");
+
+  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  let response: Response;
+  try {
+    response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify({ model, input: prompt }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(90000),
+    });
+  } catch {
+    fail(seriesId, "ai-network");
+  }
+  if (!response.ok) fail(seriesId, response.status === 429 ? "ai-limit" : "ai-provider");
+  const result = await response.json() as {
+    steps?: Array<{ type?: string; content?: Array<{ type?: string; text?: string }> }>;
+  };
+  const generated = (result.steps || [])
+    .filter((step) => step.type === "model_output")
+    .flatMap((step) => step.content || [])
+    .filter((part) => part.type === "text")
+    .map((part) => part.text || "")
+    .join("\n")
+    .trim();
+  if (generated.length < 80 || generated.length > 30000) fail(seriesId, "ai-empty");
+
+  const { data: latest, error: readError } = await supabase.from("scripts")
+    .select("version").eq("episode_id", episodeId)
+    .order("version", { ascending: false }).limit(1);
+  if (readError) fail(seriesId, "script-read");
+  const { error: saveError } = await supabase.from("scripts").insert({
+    episode_id: episodeId,
+    version: (latest?.[0]?.version ?? 0) + 1,
+    content: generated,
+    format: "screenplay",
+    created_by: ownerId,
+    change_summary: "Borrador generado con " + model + " · pendiente de revisión humana",
+  });
+  if (saveError) fail(seriesId, "script-save");
+  revalidatePath(`/studio/series/${seriesId}`);
+  redirect(`/studio/series/${seriesId}?script=saved`);
+}
