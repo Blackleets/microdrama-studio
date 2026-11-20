@@ -66,7 +66,16 @@ export default async function SeriesPage({
       </div>
 
       {noticeKey && <div role="status" className="mt-5 rounded-xl border border-[#46552a] bg-[#171e12] px-4 py-3 text-sm text-[#d6ff63]">{notices[noticeKey]}</div>}
-      {query.error && <div role="alert" className="mt-5 rounded-xl border border-red-900 bg-red-950/30 px-4 py-3 text-sm text-red-300">No se pudo guardar el cambio. Comprueba los datos y vuelve a intentarlo. Código: {String(query.error)}</div>}
+      {query.error && <div role="alert" className="mt-5 rounded-xl border border-red-900 bg-red-950/30 px-4 py-3 text-sm text-red-300">{({
+        "ai-not-configured": "Story Engine desactivado: falta configurar GEMINI_API_KEY en el servidor.",
+        "ai-context": "No se pudo cargar el contexto narrativo del episodio.",
+        "ai-network": "No se pudo conectar con el proveedor de IA. Inténtalo de nuevo.",
+        "ai-limit": "El proveedor ha limitado temporalmente las solicitudes. Espera e inténtalo más tarde.",
+        "ai-provider": "El proveedor de IA devolvió un error. Revisa la configuración de la clave y el modelo.",
+        "ai-empty": "La IA no devolvió un guion válido. Puedes intentarlo otra vez.",
+        "bible-save": "No se pudo guardar la biblia narrativa.",
+        "script-save": "No se pudo guardar la nueva versión del guion.",
+      } as Record<string, string>)[String(query.error)] || "No se pudo guardar el cambio. Comprueba los datos y vuelve a intentarlo."}</div>}
 
       <div className="grid lg:grid-cols-2 gap-5 mt-8">
         <section className="rounded-2xl border border-[#252a36] bg-[#11141c] p-5">
