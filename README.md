@@ -20,4 +20,4 @@ Next.js 15, React 19, TypeScript, Tailwind CSS 4, Supabase (Auth, Postgres, Stor
 3. Copy `.env.example` to `.env.local` and fill in Supabase values.
 4. Run `npm run dev`.
 
-The first milestone is the Studio shell and production workflow. External AI generation, billing and streaming delivery remain disabled until credentials and provider contracts are configured.
+The Studio now includes authenticated series management, a persistent story bible, character continuity, episodes, versioned scripts, scene breakdowns and a Gemini-powered script-draft action. Configure `GEMINI_API_KEY` server-side to enable AI drafts. Image/video/voice generation, billing and viewer streaming remain future integrations and are not represented as live features.
