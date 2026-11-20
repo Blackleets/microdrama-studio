@@ -54,4 +54,4 @@ An episode may be published only when:
 6. Stream app and playback delivery
 7. Wallet, unlocks, subscriptions and analytics
 
-The dashboard currently committed is a frontend foundation with sample content. Sample cards and local interactions are not connected to Supabase yet.
+The Studio series workspace now reads and writes series, story bibles, character profiles, episodes, versioned scripts and scenes through authenticated Supabase server actions. Gemini draft generation is optional and requires a server-side API key. Media generation, owner approval/release, public streaming, payments and analytics still require implementation and provider configuration.
