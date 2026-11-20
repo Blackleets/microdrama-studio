@@ -8,7 +8,7 @@ The Studio code expects a dedicated Supabase project. Do not connect it to an un
 2. Enable Email/Password authentication.
 3. Disable public sign-ups after the owner account has been provisioned. Create the owner account from the Supabase Auth dashboard or an administrator invite.
 4. Enable the Data API for the required public schema tables if the project has the new opt-in exposure setting.
-5. Apply migrations in order: `0001_initial_schema.sql`, `0002_rls_hardening.sql`, `0003_auth_function_hardening.sql`.
+5. Apply migrations in order: `0001_initial_schema.sql`, `0002_rls_hardening.sql`, `0003_auth_function_hardening.sql`, `0004_story_engine_indexes.sql`.
 6. Create private Storage buckets named `studio-private` and `published-media`. Do not make draft assets public.
 7. Add the Project URL and publishable key to deployment environment variables.
 
