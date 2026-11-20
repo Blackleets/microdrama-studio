@@ -1,28 +1,29 @@
 # MicroDrama Studio
 
-AI-assisted production workspace for vertical micro-series, designed to grow into a complete creator studio and consumer streaming app.
+AI-assisted production workspace for vertical micro-series, paired with a mobile-first consumer streaming catalog.
 
-## Product architecture
+## Product surfaces
 
-- **Studio** — story development, series bible, characters, scripts, storyboard, production preparation, editorial review and release planning.
-- **Stream** — planned mobile-first vertical series discovery and playback app.
-- **Hybrid production** — live-action AI and animated-universe adapters, with owner approval required before publication.
-- **Business model** — free episodes, premium unlocks and subscriptions are designed; payment processing is not connected yet.
+- **Streaming App** at `/` and `/streaming`: discovery catalog, featured series, genre filters, search, saved list, series detail and vertical 9:16 player shell.
+- **Private Studio** at `/studio`: command center, story bible, character studio, script room, storyboard, AI production preparation, editorial approval, distribution and revenue planning.
+- **Local publishing bridge**: a series created in Studio can enter the local streaming catalog only after every episode has editorial status `Aprobado` and the owner publishes its catalog entry.
+- **Hybrid production**: live-action AI and animated-universe adapters are planned, with owner approval required before release.
+- **Business model**: free episodes, premium unlocks and subscriptions are designed; payment processing is not connected.
 
 ## Current development mode
 
-The Studio currently runs in **local-first mode** so product work can continue before the Supabase project is available.
+The product runs in **local-first mode** so development can continue before the Supabase project is available.
 
-- Series, story bibles, characters, episodes, scripts and storyboard notes are saved in the browser's localStorage.
-- A starter example series is included on first launch.
-- The workspace is responsive and supports navigation between its production modules.
+- Studio data (series, story bibles, characters, episodes, scripts and storyboard notes) is saved in browser localStorage.
+- Streaming watchlist is saved in browser localStorage.
+- Published Studio series are read from the same browser's local Studio data and shown in the streaming catalog after editorial approval.
+- The streaming player is a UI shell. It clearly marks video as not connected; it does not pretend to play media.
+- Script structure preparation is an editable local template, not an AI-generated provider result.
 - Local data is specific to the current browser/device. It is not backed up or synchronized across devices.
-- No real image, video, voice or LLM generation is triggered in local mode. Script structure preparation is a local editable template, not a provider-generated result.
-- Editorial approval in local mode is a planning state only; it does not publish content.
 
 ## Stack
 
-Next.js 15, React 19, TypeScript, Tailwind CSS 4. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
+Next.js 15, React 19, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
 
 ## Local setup
 
@@ -35,4 +36,4 @@ Supabase is not required for the current local-first workspace. The database mig
 
 ## Not yet implemented
 
-Public streaming/player, real AI media generation, provider job queues, cloud asset storage, production authentication, cross-device persistence, payments, wallet ledger, live analytics and release/CDN delivery.
+Actual audiovisual generation, real video playback and CDN delivery, cloud asset storage, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation.
