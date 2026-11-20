@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  addCharacter, addEpisode, addScene, saveEpisodeScript, saveStoryBible, updateSeries,
+  addCharacter, addEpisode, addScene, generateEpisodeScript, saveEpisodeScript, saveStoryBible, updateSeries,
 } from "./actions";
 
 const field = "mt-2 w-full rounded-xl bg-[#090b10] border border-[#303644] px-3 py-3 text-sm text-[#edf0f5] outline-none focus:border-[#d6ff63]";
@@ -142,6 +142,12 @@ export default async function SeriesPage({
                 <input type="hidden" name="seriesId" value={id}/><input type="hidden" name="episodeId" value={episode.id}/>
                 <label className={label}>Guion completo<textarea name="content" required minLength={20} maxLength={30000} rows={10} defaultValue={currentScript?.content ?? ""} className={field + " font-mono leading-6"} placeholder={"ESCENA 1 — INT. LUGAR — NOCHE\n\nACCIÓN: Describe lo que vemos.\n\nPERSONAJE: Diálogo...\n\nCIERRE: Termina con un giro o cliffhanger."}/></label>
                 <button className="rounded-xl bg-[#d6ff63] text-[#11150a] font-bold px-4 py-3 text-xs">Guardar nueva versión del guion</button>
+              </form>
+              <form action={generateEpisodeScript} className="mt-3 rounded-xl border border-[#303644] bg-[#0c0f15] p-4 space-y-3">
+                <input type="hidden" name="seriesId" value={id}/><input type="hidden" name="episodeId" value={episode.id}/>
+                <div><div className="text-xs font-semibold text-[#d6ff63]">STORY ENGINE · GEMINI</div><p className="text-xs text-[#858b9a] mt-1">Genera un borrador usando la biblia narrativa y los personajes. Se guarda como una nueva versión; tú decides si lo apruebas.</p></div>
+                <label className={label}>Dirección creativa opcional<textarea name="creativeBrief" rows={2} maxLength={4000} className={field} placeholder="Ej.: revela una traición, introduce una pista y termina con una llamada inesperada."/></label>
+                <button className="rounded-xl border border-[#d6ff63] text-[#d6ff63] px-4 py-3 text-xs font-semibold">✦ Generar borrador con IA</button>
               </form>
               {episodeScripts.length > 1 && <details className="mt-3 text-xs text-[#858b9a]"><summary className="cursor-pointer">Ver versiones anteriores ({episodeScripts.length - 1})</summary><div className="mt-2 space-y-1">{episodeScripts.slice(1).map((script) => <div key={script.id}>Versión {script.version} · guardada</div>)}</div></details>}
               <div className="border-t border-[#252a36] mt-5 pt-5">
