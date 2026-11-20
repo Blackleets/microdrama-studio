@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+:root{color-scheme:dark;--bg:#090b10;--panel:#11141c;--line:#252a36;--muted:#858b9a;--text:#f4f5f8;--accent:#d6ff63}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0;background:var(--bg);color:var(--text)}
+body{font-family:Arial,Helvetica,sans-serif}
+button,a{ -webkit-tap-highlight-color:transparent }
+::selection{background:#d6ff6340}
+.studio-grid{background-image:linear-gradient(#ffffff06 1px,transparent 1px),linear-gradient(90deg,#ffffff06 1px,transparent 1px);background-size:36px 36px}
+.panel{background:linear-gradient(145deg,#151923,#10131a);border:1px solid var(--line);border-radius:16px}
+.muted{color:var(--muted)}
+.pill{border:1px solid #343a49;border-radius:999px;padding:5px 10px;font-size:11px;letter-spacing:.04em}
