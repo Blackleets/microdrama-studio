@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { signOut } from "./actions";
 import { createSeries } from "./actions";
 import { ArrowUpRight, Clapperboard, Plus, Search, Sparkles, LogOut, Film, Clock3, Layers3 } from "lucide-react";
@@ -14,7 +15,7 @@ export default function StudioDashboard({initialSeries,email}:{initialSeries:Ser
   const filtered = items.filter(item => item.title.toLowerCase().includes(search.toLowerCase()));
   return <main className="min-h-screen bg-[#090b10]">
     <header className="h-[72px] border-b border-[#252a36] px-5 md:px-8 flex items-center justify-between">
-      <a href="/" className="flex items-center gap-3"><span className="w-9 h-9 rounded-xl bg-[#d6ff63] text-black grid place-items-center"><Clapperboard size={18}/></span><span className="font-bold text-sm tracking-wider">MICRODRAMA <span className="text-[#d6ff63]">/ STUDIO</span></span></a>
+      <Link href="/" className="flex items-center gap-3"><span className="w-9 h-9 rounded-xl bg-[#d6ff63] text-black grid place-items-center"><Clapperboard size={18}/></span><span className="font-bold text-sm tracking-wider">MICRODRAMA <span className="text-[#d6ff63]">/ STUDIO</span></span></Link>
       <div className="flex items-center gap-3"><span className="hidden sm:block text-xs text-[#858b9a]">{email}</span><form action={signOut}><button className="flex items-center gap-2 rounded-lg border border-[#303644] px-3 py-2 text-xs text-[#aeb4c0]"><LogOut size={14}/> Salir</button></form></div>
     </header>
     <div className="max-w-6xl mx-auto px-5 md:px-8 py-9">
