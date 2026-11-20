@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  addCharacter, addEpisode, addScene, generateEpisodeScript, saveEpisodeScript, saveStoryBible, updateSeries,
+  addCharacter, addEpisode, addScene, approveEpisodePackage, generateEpisodeScript, requestEpisodeChanges, saveEpisodeScript, saveStoryBible, submitEpisodeForReview, updateSeries,
 } from "./actions";
 
 const field = "mt-2 w-full rounded-xl bg-[#090b10] border border-[#303644] px-3 py-3 text-sm text-[#edf0f5] outline-none focus:border-[#d6ff63]";
@@ -46,8 +46,11 @@ export default async function SeriesPage({
     episode: "Episodio creado.",
     script: "Nueva versión del guion guardada.",
     scene: "Escena añadida al episodio.",
+    review: "Paquete narrativo enviado a revisión.",
+    approved: "Paquete narrativo aprobado. La publicación sigue bloqueada hasta completar producción audiovisual.",
+    changes: "Cambios solicitados. El episodio vuelve a desarrollo.",
   };
-  const noticeKey = Object.keys(notices).find((key) => query[key] === (key === "saved" || key === "bible" || key === "script" ? "1" : "created"));
+  const noticeKey = Object.keys(notices).find((key) => query[key] === (key === "saved" || key === "bible" || key === "script" || key === "approved" ? "1" : key === "changes" ? "requested" : key === "review" ? "submitted" : "created"));
 
   return <main className="min-h-screen bg-[#090b10]">
     <header className="h-[70px] border-b border-[#252a36] px-5 md:px-8 flex items-center justify-between">
@@ -76,6 +79,10 @@ export default async function SeriesPage({
         "ai-job": "No se pudo registrar el trabajo de IA. Comprueba los permisos de la base de datos.",
         "bible-save": "No se pudo guardar la biblia narrativa.",
         "script-save": "No se pudo guardar la nueva versión del guion.",
+        "review-no-script": "No puedes enviar el episodio a revisión sin un guion guardado.",
+        "review-state": "El estado del episodio ha cambiado. Actualiza la página e inténtalo de nuevo.",
+        "review-approval": "No se pudo registrar la decisión de revisión.",
+        "review-notes": "Escribe al menos una nota explicando los cambios solicitados.",
       } as Record<string, string>)[String(query.error)] || "No se pudo guardar el cambio. Comprueba los datos y vuelve a intentarlo."}</div>}
 
       <div className="grid lg:grid-cols-2 gap-5 mt-8">
@@ -148,6 +155,13 @@ export default async function SeriesPage({
             const episodeScenes = (scenes ?? []).filter((scene) => scene.episode_id === episode.id);
             return <article key={episode.id} className="rounded-2xl border border-[#252a36] bg-[#11141c] p-5">
               <div className="flex items-center justify-between gap-3"><div><div className="text-[10px] tracking-widest text-[#d6ff63]">EPISODIO {String(episode.episode_number).padStart(2, "0")}</div><h3 className="font-semibold mt-1">{episode.title}</h3></div><span className="pill">{currentScript ? `Guion v${currentScript.version}` : "Sin guion"}</span></div>
+              <div className="mt-4 rounded-xl border border-[#303644] bg-[#0c0f15] p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><div className="text-xs font-semibold">Control editorial</div><p className="text-xs text-[#858b9a] mt-1">Aprobación del paquete narrativo; no publica el episodio ni sustituye la revisión audiovisual.</p></div><span className="pill">{episode.status}</span></div>
+                {episode.status === "approved" ? <p className="text-xs text-[#d6ff63] mt-3">Paquete narrativo aprobado por el propietario. La publicación permanece bloqueada.</p> : episode.status === "review" ? <div className="grid md:grid-cols-2 gap-3 mt-3">
+                  <form action={approveEpisodePackage}><input type="hidden" name="seriesId" value={id}/><input type="hidden" name="episodeId" value={episode.id}/><button className="rounded-xl bg-[#d6ff63] text-[#11150a] font-bold px-4 py-3 text-xs">Aprobar paquete narrativo</button></form>
+                  <form action={requestEpisodeChanges} className="space-y-2"><input type="hidden" name="seriesId" value={id}/><input type="hidden" name="episodeId" value={episode.id}/><textarea name="notes" required minLength={3} maxLength={2000} rows={2} placeholder="Qué debe corregirse..." className={field}/><button className="rounded-xl border border-[#424a5a] px-4 py-3 text-xs">Solicitar cambios</button></form>
+                </div> : <form action={submitEpisodeForReview} className="mt-3"><input type="hidden" name="seriesId" value={id}/><input type="hidden" name="episodeId" value={episode.id}/><button className="rounded-xl border border-[#d6ff63] text-[#d6ff63] px-4 py-3 text-xs">Enviar paquete narrativo a revisión</button></form>}
+              </div>
               <form action={saveEpisodeScript} className="mt-4 space-y-3">
                 <input type="hidden" name="seriesId" value={id}/><input type="hidden" name="episodeId" value={episode.id}/>
                 <label className={label}>Guion completo<textarea name="content" required minLength={20} maxLength={30000} rows={10} defaultValue={currentScript?.content ?? ""} className={field + " font-mono leading-6"} placeholder={"ESCENA 1 — INT. LUGAR — NOCHE\n\nACCIÓN: Describe lo que vemos.\n\nPERSONAJE: Diálogo...\n\nCIERRE: Termina con un giro o cliffhanger."}/></label>
