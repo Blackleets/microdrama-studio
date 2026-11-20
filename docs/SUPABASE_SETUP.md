@@ -18,6 +18,7 @@ The Studio code expects a dedicated Supabase project. Do not connect it to an un
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `GEMINI_API_KEY` (optional; server-side only, for Story Engine draft generation)
 - `GEMINI_MODEL` (optional; defaults to `gemini-3.8-flash`)
+- `GEMINI_DAILY_DRAFT_LIMIT` (optional; maximum 1–100 draft requests per UTC day, defaults to 20)
 
 Never add service-role or secret API keys to `NEXT_PUBLIC_*` variables or commit them to Git.
 
