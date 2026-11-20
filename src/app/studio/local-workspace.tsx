@@ -17,7 +17,7 @@ const starter: Series[] = [{
  {id:"c1",name:"Clara Méndez",role:"Protagonista",description:"32 años. Restauradora de arte. Inteligente, reservada y determinada a descubrir qué ocurrió con su hermana."},
  {id:"c2",name:"Adrián Vega",role:"Interés romántico",description:"35 años. Abogado de familia poderosa. Protector, ambiguo y marcado por una promesa imposible."}
  ],episodes:[{id:"e1",title:"El regreso",number:1,status:"Borrador",duration:90,script:"HOOK (0–5s)\nClara encuentra una fotografía suya tomada ayer… dentro de una casa cerrada desde hace diez años.\n\nESCENA 1 · INT. CASA FAMILIAR · NOCHE\nClara entra con una linterna. El polvo cubre los muebles. En la pared, un reloj detenido marca las 02:17.\n\nCLARA: No puede ser…\n\nESCENA 2 · PASILLO · CONTINUO\nUna voz suena detrás de ella.\n\nADRIÁN: Te dije que no volvieras.\n\nCLIFFHANGER\nClara se gira. Adrián sostiene la misma fotografía, pero en la suya aparece una tercera persona.",scenes:["Plano detalle: fotografía húmeda sobre una mesa","Travelling lento siguiendo a Clara por el pasillo","Primer plano de Adrián en contraluz","Corte a negro tras la revelación"]}]}
-]}];
+}];
 
 const sections:{id:Section;label:string;icon:any;group:string}[]=[
  {id:"overview",label:"Command Center",icon:LayoutDashboard,group:"WORKSPACE"},
