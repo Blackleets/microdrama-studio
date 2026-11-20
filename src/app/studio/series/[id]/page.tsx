@@ -73,6 +73,7 @@ export default async function SeriesPage({
         "ai-limit": "El proveedor ha limitado temporalmente las solicitudes. Espera e inténtalo más tarde.",
         "ai-provider": "El proveedor de IA devolvió un error. Revisa la configuración de la clave y el modelo.",
         "ai-empty": "La IA no devolvió un guion válido. Puedes intentarlo otra vez.",
+        "ai-job": "No se pudo registrar el trabajo de IA. Comprueba los permisos de la base de datos.",
         "bible-save": "No se pudo guardar la biblia narrativa.",
         "script-save": "No se pudo guardar la nueva versión del guion.",
       } as Record<string, string>)[String(query.error)] || "No se pudo guardar el cambio. Comprueba los datos y vuelve a intentarlo."}</div>}
