@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Activity, ArrowRight, BookOpen, Check, ChevronRight, Clapperboard, Clock3,
-  Film, FolderKanban, LayoutDashboard, Plus, Search, Settings2, ShieldCheck,
+  Activity, ArrowRight, Check, ChevronRight, Clapperboard, Clock3,
+  Film, FolderKanban, LayoutDashboard, Plus, Search, ShieldCheck,
   Sparkles, Users, WandSparkles, X, Play, FileText, Layers3, Video, CircleDot
 } from "lucide-react";
 
