@@ -48,10 +48,10 @@ An episode may be published only when:
 
 1. Studio shell, database and owner authentication
 2. Series, story bible, character, episode and script CRUD
-3. Scene/storyboard workflow
+3. Scene/storyboard workflow and owner review gate
 4. Provider adapters and asynchronous generation jobs
 5. Review queue and explicit approval gate
 6. Stream app and playback delivery
 7. Wallet, unlocks, subscriptions and analytics
 
-The Studio series workspace now reads and writes series, story bibles, character profiles, episodes, versioned scripts and scenes through authenticated Supabase server actions. Gemini draft generation is optional and requires a server-side API key. Media generation, owner approval/release, public streaming, payments and analytics still require implementation and provider configuration.
+The Studio series workspace now reads and writes series, story bibles, character profiles, episodes, versioned scripts and scenes through authenticated Supabase server actions. It includes an owner review gate for the narrative package; approval does not publish an episode. Gemini draft generation is optional and requires a server-side API key. Media generation, audiovisual QA, final release, public streaming, payments and analytics still require implementation and provider configuration.
