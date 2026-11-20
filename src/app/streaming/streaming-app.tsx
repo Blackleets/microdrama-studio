@@ -16,13 +16,15 @@ export default function StreamingApp(){
  const [tab,setTab]=useState<Tab>("Para ti");
  const [query,setQuery]=useState("");
  const [favorites,setFavorites]=useState<string[]>([]);
+ const [publishedShows,setPublishedShows]=useState<Show[]>([]);
  const [selected,setSelected]=useState<Show | null>(null);
  const [playing,setPlaying]=useState(false);
  const [episode,setEpisode]=useState(0);
  const [hydrated,setHydrated]=useState(false);
- useEffect(()=>{try{setFavorites(JSON.parse(localStorage.getItem("microdrama-watchlist-v1")||"[]"));}catch{}setHydrated(true)},[]);
+ useEffect(()=>{try{setFavorites(JSON.parse(localStorage.getItem("microdrama-watchlist-v1")||"[]"));const local=JSON.parse(localStorage.getItem("microdrama-studio-local-v1")||"[]") as Array<{id:string;title:string;logline?:string;genre?:string;status:string;episodes:Array<{title:string;status:string}>}>;setPublishedShows(local.filter(s=>s.status==="Publicado"&&s.episodes.length>0&&s.episodes.every(e=>e.status==="Aprobado")).map((s,i)=>({id:"studio-"+s.id,title:s.title,tagline:s.logline||"Una nueva historia original.",genre:s.genre||"Drama",episodes:s.episodes.length,minutes:"1–2 min",badge:"NUEVA · STUDIO",colors:[["#35413a","#c0bd82","#101b19"],["#4b3548","#c5a0b0","#19131d"],["#314052","#9db9c0","#111923"]][i%3],symbol:s.title.toUpperCase().slice(0,16),description:s.logline||"Serie original creada en MicroDrama Studio.",cast:["Reparto por definir"],episodeTitles:s.episodes.map(e=>e.title)})));}catch{}setHydrated(true)},[]);
  useEffect(()=>{if(hydrated)localStorage.setItem("microdrama-watchlist-v1",JSON.stringify(favorites));},[favorites,hydrated]);
- const filtered=useMemo(()=>shows.filter(s=>(tab==="Mi lista"?favorites.includes(s.id):tab==="Romance"?s.genre.toLowerCase().includes("romance"):tab==="Suspense"?s.genre.toLowerCase().includes("suspense")||s.genre.toLowerCase().includes("thriller"):true)&&(!query||s.title.toLowerCase().includes(query.toLowerCase())||s.genre.toLowerCase().includes(query.toLowerCase()))),[tab,query,favorites]);
+ const catalogShows=useMemo(()=>[...publishedShows,...shows.filter(s=>!publishedShows.some(p=>p.id==="studio-"+s.id))],[publishedShows]);
+ const filtered=useMemo(()=>catalogShows.filter(s=>(tab==="Mi lista"?favorites.includes(s.id):tab==="Romance"?s.genre.toLowerCase().includes("romance"):tab==="Suspense"?s.genre.toLowerCase().includes("suspense")||s.genre.toLowerCase().includes("thriller"):true)&&(!query||s.title.toLowerCase().includes(query.toLowerCase())||s.genre.toLowerCase().includes(query.toLowerCase()))),[tab,query,favorites,catalogShows]);
  function toggleFavorite(id:string){setFavorites(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);}
  const hero=shows[0];
  return <main className="stream-shell min-h-screen bg-[#080a0e] text-white">
