@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -186,6 +187,25 @@ export async function generateEpisodeScript(formData: FormData) {
   ].join("\n");
 
   const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  const configuredLimit = Number.parseInt(process.env.GEMINI_DAILY_DRAFT_LIMIT || "20", 10);
+  const dailyLimit = Number.isFinite(configuredLimit) ? Math.max(1, Math.min(100, configuredLimit)) : 20;
+  const dayStart = new Date();
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const { count, error: countError } = await supabase.from("production_jobs")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", ownerId).eq("task_type", "script_generation")
+    .gte("created_at", dayStart.toISOString());
+  if (countError) fail(seriesId, "ai-job");
+  if ((count ?? 0) >= dailyLimit) fail(seriesId, "ai-limit");
+
+  const { data: job, error: jobError } = await supabase.from("production_jobs").insert({
+    owner_id: ownerId, series_id: seriesId, episode_id: episodeId,
+    task_type: "script_generation", provider: "google", model, status: "running",
+    input: { episode_title: episode.title, brief_length: brief.length },
+    idempotency_key: randomUUID(),
+  }).select("id").single();
+  if (jobError || !job) fail(seriesId, "ai-job");
+
   let response: Response;
   try {
     response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
@@ -196,9 +216,18 @@ export async function generateEpisodeScript(formData: FormData) {
       signal: AbortSignal.timeout(90000),
     });
   } catch {
+    await supabase.from("production_jobs").update({
+      status: "failed", error_message: "Provider network request failed", finished_at: new Date().toISOString(),
+    }).eq("id", job.id);
     fail(seriesId, "ai-network");
   }
-  if (!response.ok) fail(seriesId, response.status === 429 ? "ai-limit" : "ai-provider");
+  if (!response.ok) {
+    await supabase.from("production_jobs").update({
+      status: "failed", error_message: "Provider returned HTTP " + response.status,
+      finished_at: new Date().toISOString(),
+    }).eq("id", job.id);
+    fail(seriesId, response.status === 429 ? "ai-limit" : "ai-provider");
+  }
   const result = await response.json() as {
     steps?: Array<{ type?: string; content?: Array<{ type?: string; text?: string }> }>;
   };
@@ -209,21 +238,37 @@ export async function generateEpisodeScript(formData: FormData) {
     .map((part) => part.text || "")
     .join("\n")
     .trim();
-  if (generated.length < 80 || generated.length > 30000) fail(seriesId, "ai-empty");
+  if (generated.length < 80 || generated.length > 30000) {
+    await supabase.from("production_jobs").update({
+      status: "failed", error_message: "Provider returned empty or oversized text",
+      finished_at: new Date().toISOString(),
+    }).eq("id", job.id);
+    fail(seriesId, "ai-empty");
+  }
 
   const { data: latest, error: readError } = await supabase.from("scripts")
     .select("version").eq("episode_id", episodeId)
     .order("version", { ascending: false }).limit(1);
   if (readError) fail(seriesId, "script-read");
-  const { error: saveError } = await supabase.from("scripts").insert({
+  const { data: savedScript, error: saveError } = await supabase.from("scripts").insert({
     episode_id: episodeId,
     version: (latest?.[0]?.version ?? 0) + 1,
     content: generated,
     format: "screenplay",
     created_by: ownerId,
     change_summary: "Borrador generado con " + model + " · pendiente de revisión humana",
-  });
-  if (saveError) fail(seriesId, "script-save");
+  }).select("id").single();
+  if (saveError || !savedScript) {
+    await supabase.from("production_jobs").update({
+      status: "failed", error_message: "Could not persist generated script",
+      finished_at: new Date().toISOString(),
+    }).eq("id", job.id);
+    fail(seriesId, "script-save");
+  }
+  await supabase.from("production_jobs").update({
+    status: "succeeded", output: { script_id: savedScript.id },
+    finished_at: new Date().toISOString(),
+  }).eq("id", job.id);
   revalidatePath(`/studio/series/${seriesId}`);
   redirect(`/studio/series/${seriesId}?script=saved`);
 }
