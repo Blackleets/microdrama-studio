@@ -10,7 +10,7 @@ type SeriesItem = { id:string; title:string; logline:string|null; genre:string[]
 export default function StudioDashboard({initialSeries,email}:{initialSeries:SeriesItem[];email:string}) {
   const [open,setOpen] = useState(false);
   const [search,setSearch] = useState("");
-  const [items,setItems] = useState(initialSeries);
+  const [items] = useState(initialSeries);
   const filtered = items.filter(item => item.title.toLowerCase().includes(search.toLowerCase()));
   return <main className="min-h-screen bg-[#090b10]">
     <header className="h-[72px] border-b border-[#252a36] px-5 md:px-8 flex items-center justify-between">
