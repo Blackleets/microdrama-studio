@@ -16,11 +16,13 @@ The Studio code expects a dedicated Supabase project. Do not connect it to an un
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `GEMINI_API_KEY` (optional; server-side only, for Story Engine draft generation)
+- `GEMINI_MODEL` (optional; defaults to `gemini-3.8-flash`)
 
 Never add service-role or secret API keys to `NEXT_PUBLIC_*` variables or commit them to Git.
 
 ## Current integration status
 
-The app has an email/password sign-in route, cookie-based SSR clients, session refresh middleware, and owner-scoped server actions for series, episodes and characters. These become live only after the dedicated project is configured and migrations are applied.
+The app has an email/password sign-in route, cookie-based SSR clients, session refresh middleware, and owner-scoped server actions for series, the story bible, characters, episodes, versioned scripts and scenes. The Script Room can call the Gemini Interactions API from a server action and save the result as a new draft version. AI generation remains disabled until GEMINI_API_KEY is configured in the server environment. These features become live only after the dedicated Supabase project is configured and migrations are applied.
 
 The existing Supabase account currently exposes a project named `Blackleets's Project` that is inactive. It has not been restored or modified because it has not been confirmed as the database for this product.
