@@ -1,7 +1,7 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Local-first mode: authentication will be restored when Supabase is connected.
-export function middleware(_request: NextRequest) {
+export function middleware() {
   return NextResponse.next();
 }
 
