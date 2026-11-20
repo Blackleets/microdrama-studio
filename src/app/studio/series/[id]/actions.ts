@@ -228,9 +228,16 @@ export async function generateEpisodeScript(formData: FormData) {
     }).eq("id", job.id);
     fail(seriesId, response.status === 429 ? "ai-limit" : "ai-provider");
   }
-  const result = await response.json() as {
-    steps?: Array<{ type?: string; content?: Array<{ type?: string; text?: string }> }>;
-  };
+  let result: { steps?: Array<{ type?: string; content?: Array<{ type?: string; text?: string }> }> };
+  try {
+    result = await response.json() as typeof result;
+  } catch {
+    await supabase.from("production_jobs").update({
+      status: "failed", error_message: "Provider returned invalid JSON",
+      finished_at: new Date().toISOString(),
+    }).eq("id", job.id);
+    fail(seriesId, "ai-empty");
+  }
   const generated = (result.steps || [])
     .filter((step) => step.type === "model_output")
     .flatMap((step) => step.content || [])
@@ -249,7 +256,13 @@ export async function generateEpisodeScript(formData: FormData) {
   const { data: latest, error: readError } = await supabase.from("scripts")
     .select("version").eq("episode_id", episodeId)
     .order("version", { ascending: false }).limit(1);
-  if (readError) fail(seriesId, "script-read");
+  if (readError) {
+    await supabase.from("production_jobs").update({
+      status: "failed", error_message: "Could not read current script version",
+      finished_at: new Date().toISOString(),
+    }).eq("id", job.id);
+    fail(seriesId, "script-read");
+  }
   const { data: savedScript, error: saveError } = await supabase.from("scripts").insert({
     episode_id: episodeId,
     version: (latest?.[0]?.version ?? 0) + 1,
