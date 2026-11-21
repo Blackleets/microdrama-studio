@@ -182,6 +182,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   await renderButton.click();
   await expect(page.getByRole("link", { name: /Descargar .*master\.webm/ })).toBeVisible({ timeout: 60_000 });
 
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem("microdrama-assets-v1") || "[]").some((asset: { seriesId?: string; assetRole?: string }) => asset.seriesId === "render-series" && asset.assetRole === "Máster de episodio"));
   const renderedMaster = await page.evaluate(() => {
     const assets = JSON.parse(localStorage.getItem("microdrama-assets-v1") || "[]");
     return assets.find((asset: { seriesId?: string; assetRole?: string }) => asset.seriesId === "render-series" && asset.assetRole === "Máster de episodio");
@@ -208,7 +209,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   await page.goto("/streaming");
   await expect(page.getByRole("button", { name: /RENDER TEST/ })).toBeVisible();
   await page.getByRole("button", { name: /RENDER TEST/ }).click();
-  await page.getByRole("button", { name: /Ver episodio 1/ }).click();
+  await page.getByRole("button", { name: /Ver episodio 1/ }).last().click();
   const localPlayer = page.locator(".vertical-player video");
   await expect(localPlayer).toBeVisible();
   await expect(localPlayer).toHaveAttribute("src", /^blob:/);
