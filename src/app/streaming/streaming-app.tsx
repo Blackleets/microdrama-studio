@@ -96,7 +96,7 @@ export default function StreamingApp(){
  },[selected,episode,playing]);
  useEffect(()=>{if(autoNextCountdown===null)return;const timer=window.setTimeout(()=>setAutoNextCountdown(current=>current===null?null:current<=1?0:current-1),1000);return()=>window.clearTimeout(timer);},[autoNextCountdown]);
  useEffect(()=>{if(autoNextCountdown!==0)return;setAutoNextCountdown(null);setAutoPlayNext(true);setEpisode(current=>Math.min(current+1,(selected?.episodeTitles.length||1)-1));},[autoNextCountdown,selected]);
- useEffect(()=>{if(!selected)return;const onKeyDown=(event:KeyboardEvent)=>{if(event.key==="Escape"){setSelected(null);setPlaying(false);}};window.addEventListener("keydown",onKeyDown);return()=>window.removeEventListener("keydown",onKeyDown);},[selected]);
+ useEffect(()=>{if(!selected)return;const onKeyDown=(event:KeyboardEvent)=>{if(event.key==="Escape"){setSelected(null);setPlaying(false);setAutoNextCountdown(null);setAutoPlayNext(false);}};window.addEventListener("keydown",onKeyDown);return()=>window.removeEventListener("keydown",onKeyDown);},[selected]);
  const catalogShows=useMemo(()=>[...publishedShows,...shows.filter(s=>!publishedShows.some(p=>p.id==="studio-"+s.id))],[publishedShows]);
  const filtered=useMemo(()=>catalogShows.filter(s=>(tab==="Mi lista"?favorites.includes(s.id):tab==="Romance"?s.genre.toLowerCase().includes("romance"):tab==="Suspense"?s.genre.toLowerCase().includes("suspense")||s.genre.toLowerCase().includes("thriller"):true)&&(!query||s.title.toLowerCase().includes(query.toLowerCase())||s.genre.toLowerCase().includes(query.toLowerCase()))),[tab,query,favorites,catalogShows]);
  function toggleFavorite(id:string){setFavorites(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);}
