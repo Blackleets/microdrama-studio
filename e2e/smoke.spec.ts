@@ -81,6 +81,16 @@ test("continue watching opens the saved episode and restores its playback positi
       fileName: "resume.webm",
       mimeType: "video/webm",
       versionStatus: "Actual",
+    }, {
+      id: "resume-master-3",
+      seriesId,
+      episodeId: "resume-episode-3",
+      kind: "Vídeo",
+      assetRole: "Máster de episodio",
+      fileId: "resume-media",
+      fileName: "resume.webm",
+      mimeType: "video/webm",
+      versionStatus: "Actual",
     }]));
     localStorage.setItem("microdrama-watch-progress-v1", JSON.stringify({
       ["studio-" + seriesId]: { episode: 1, time: 10, duration: 30, updatedAt: "2026-11-21T18:00:00.000Z" },
