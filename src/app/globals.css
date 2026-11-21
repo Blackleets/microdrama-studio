@@ -95,3 +95,30 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 @media(hover:none){.show-poster:hover{transform:none;box-shadow:0 10px 30px #0003}.poster-play{opacity:1;transform:none}}
 @media(max-width:600px){.stream-hero-copy{animation-duration:700ms}.stream-hero-art{animation-duration:900ms}.stream-section{animation-duration:450ms}.show-poster:hover{transform:none}.show-card-info button{min-width:36px;min-height:36px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.show-card{animation:none}.stream-hero-copy,.stream-hero-art{animation:none}.hero-orbit,.hero-one,.hero-two,.hero-film-grain,.hero-title-mark,.banner-ring,.banner-frame{animation:none}}
+
+
+/* Studio shell — restrained motion and clearer hierarchy. */
+.studio-shell{position:relative;isolation:isolate;overflow-x:clip;background-image:radial-gradient(ellipse at 12% 0%,#d6ff6309,transparent 34%),radial-gradient(ellipse at 92% 18%,#7c8cff0a,transparent 30%)}
+.studio-shell>header{box-shadow:0 8px 32px #0004;transition:border-color 300ms ease,background 300ms ease}
+.studio-shell aside{background:linear-gradient(180deg,#0b0e14,#090b10)}
+.studio-shell aside button{position:relative;overflow:hidden;transition:color 180ms ease,background 220ms ease,border-color 220ms ease,transform 220ms cubic-bezier(.2,.72,.2,1)}
+.studio-shell aside button:hover{transform:translateX(2px)}
+.studio-shell aside button:after{content:"";position:absolute;left:0;top:20%;bottom:20%;width:2px;background:var(--accent);transform:scaleY(0);transition:transform 220ms ease}
+.studio-shell aside button:focus-visible:after,.studio-shell aside button[class*="text-[#d6ff63]"]:after{transform:scaleY(1)}
+.studio-shell section>div>div:first-child h1{animation:studio-heading-in 420ms cubic-bezier(.2,.72,.2,1) both}
+.studio-shell .panel{transition:border-color 240ms ease,box-shadow 300ms ease,background 300ms ease}
+.studio-shell .panel:hover{border-color:#394252}
+.studio-shell .panel button{transition:transform 180ms ease,border-color 180ms ease,background 180ms ease}
+.studio-shell .panel button:active{transform:scale(.985)}
+.studio-shell .btn-primary{transition:transform 180ms ease,box-shadow 220ms ease,filter 180ms ease}
+.studio-shell .btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 24px #d6ff631c;filter:brightness(1.04)}
+.studio-shell .btn-secondary{transition:border-color 180ms ease,background 180ms ease,color 180ms ease}
+.studio-shell .btn-secondary:hover:not(:disabled){border-color:#d6ff6370;background:#d6ff630a;color:#f4f5f8}
+.studio-shell .field{transition:border-color 180ms ease,box-shadow 180ms ease}
+.studio-shell .field:focus{box-shadow:0 0 0 3px #d6ff6314}
+.studio-shell .panel .aspect-video{overflow:hidden}
+.studio-shell .panel .aspect-video>svg{transition:transform 450ms cubic-bezier(.2,.72,.2,1),color 450ms ease}
+.studio-shell .panel:hover .aspect-video>svg{transform:scale(1.08);color:#d6ff63}
+@keyframes studio-heading-in{from{opacity:0;transform:translateY(9px);filter:blur(3px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@media(max-width:1023px){.studio-shell aside{display:none}}
+@media(prefers-reduced-motion:reduce){.studio-shell section>div>div:first-child h1{animation:none}.studio-shell aside button:hover{transform:none}}
