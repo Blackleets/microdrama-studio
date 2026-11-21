@@ -9,7 +9,7 @@ This workflow describes the current end-to-end path using one browser profile. I
 3. Add an episode and prepare its script and storyboard.
 4. Keep the episode in draft until the creative package is ready for human review.
 
-The local Story Engine creates an editable screenplay structure. Optional Gemini generation is available without Supabase when the server has `GEMINI_API_KEY`, an explicitly selected `GEMINI_MODEL`, and a long random `LOCAL_STUDIO_AI_TOKEN`. Enter that access token in Script Room; it is held in sessionStorage and the Google API key stays server-side. The in-memory request limit is best-effort per server process, not a durable account quota.
+The local Story Engine creates an editable screenplay structure. Optional Gemini generation is available without Supabase when the server has `GEMINI_API_KEY`, an explicitly selected `GEMINI_MODEL`, and a random `LOCAL_STUDIO_AI_TOKEN` of at least 32 characters. Enter that access token in Script Room; it is held in sessionStorage and the Google API key stays server-side. The in-memory request limit is best-effort per server process, not a durable account quota.
 
 ## 2. Import production assets
 
