@@ -84,6 +84,27 @@ test("continue watching opens the saved episode and restores its playback positi
     localStorage.setItem("microdrama-watch-progress-v1", JSON.stringify({
       ["studio-" + seriesId]: { episode: 1, time: 10, duration: 30, updatedAt: "2026-11-21T18:00:00.000Z" },
     }));
+    const canvas = document.createElement("canvas");
+    canvas.width = 160;
+    canvas.height = 284;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas unavailable for playback fixture");
+    context.fillStyle = "#263c49";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    const stream = canvas.captureStream(15);
+    const recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+    const chunks: Blob[] = [];
+    const recording = new Promise<Blob>((resolve, reject) => {
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onerror = () => reject(new Error("Could not create playback fixture"));
+      recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
+    });
+    recorder.start();
+    await new Promise(resolve => window.setTimeout(resolve, 1200));
+    recorder.stop();
+    const videoFile = new File([await recording], "resume.webm", { type: "video/webm" });
+    stream.getTracks().forEach(track => track.stop());
+
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open("microdrama-media-v1", 1);
       request.onupgradeneeded = () => {
@@ -96,7 +117,7 @@ test("continue watching opens the saved episode and restores its playback positi
       const transaction = db.transaction("files", "readwrite");
       transaction.objectStore("files").put({
         id: "resume-media",
-        file: new File(["local playback fixture"], "resume.webm", { type: "video/webm" }),
+        file: videoFile,
       });
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
