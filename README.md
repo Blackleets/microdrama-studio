@@ -49,7 +49,7 @@ Next.js 16, React 19.2, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Au
 
 ## Local setup
 
-1. Install Node.js 20.9+.
+1. Install Node.js 22.13 or newer.
 2. Run `npm install`.
 3. Run `npm run dev`.
 4. Open `http://localhost:3000`.
