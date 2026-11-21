@@ -44,6 +44,7 @@ test("Studio and post-production fit a mobile viewport", async ({ page }) => {
 test("local WebM renderer creates a rights-pending episode master", async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(async () => {
     const seriesId = "render-series";
     const episodeId = "render-episode";
@@ -223,6 +224,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
 
 test("asset rights cannot be confirmed without license evidence", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "rights-series",
@@ -242,6 +244,7 @@ test("asset rights cannot be confirmed without license evidence", async ({ page 
 
 test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "subtitle-series",
@@ -265,6 +268,7 @@ test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
 
 test("confirming asset rights requires operator acknowledgement and invalidates release QA", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "rights-approval-series",
@@ -288,6 +292,7 @@ test("confirming asset rights requires operator acknowledgement and invalidates 
 
 test("local backup restore validates the format and replaces workspace metadata", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "before-restore",
@@ -342,6 +347,7 @@ test("local backup restore validates the format and replaces workspace metadata"
 
 test("invalid local backup does not overwrite existing workspace", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "keep-series",
@@ -365,6 +371,7 @@ test("invalid local backup does not overwrite existing workspace", async ({ page
 
 test("malformed local backup metadata is rejected without modifying workspace", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "safe-series",
@@ -410,6 +417,7 @@ test("malformed local backup metadata is rejected without modifying workspace", 
 
 test("exported local backup can be imported as a round trip", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "roundtrip-series",
