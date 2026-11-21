@@ -15,7 +15,7 @@ The local Story Engine creates an editable screenplay structure. Optional Gemini
 
 1. Open `/studio/assets`.
 2. Select the series and episode before importing each episode-specific master.
-3. Import the video master, then confirm the rights state and license/ownership notes.
+3. Import each video and classify it as `Máster de episodio`, `Clip de escena`, `Tráiler` or `Referencia`. The release gate and Streaming App use only episode masters. Then confirm the rights state and license/ownership notes.
 4. Confirm the extracted width, height and duration. Enter FPS, codec and audio-track count manually; the browser does not inspect those container fields.
 5. Import the episode's SRT or WebVTT subtitle file and set its language. The structural parser checks timestamps, ordering, overlap and non-empty cues.
 6. Confirm rights for every current asset linked to the series.
