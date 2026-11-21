@@ -29,3 +29,14 @@ test("Gemini endpoint stays disabled without a server access token", async ({ re
   const body = await response.json();
   expect(body.error).toBe("token_not_configured");
 });
+
+test("Studio and post-production fit a mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/studio");
+  const studioWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(studioWidth).toBeLessThanOrEqual(390);
+
+  await page.goto("/studio/post-production");
+  const editorWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(editorWidth).toBeLessThanOrEqual(390);
+});
