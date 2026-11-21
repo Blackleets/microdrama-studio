@@ -68,6 +68,7 @@ test("continue watching opens the saved episode and restores its playback positi
       episodes: [
         { id: "resume-episode-1", title: "First Chapter", status: "Aprobado" },
         { id: episodeId, title: "Second Chapter", status: "Aprobado" },
+        { id: "resume-episode-3", title: "Final Chapter", status: "Aprobado" },
       ],
     }]));
     localStorage.setItem("microdrama-assets-v1", JSON.stringify([{
@@ -132,7 +133,24 @@ test("continue watching opens the saved episode and restores its playback positi
   await expect(player).toHaveAttribute("src", /^blob:/);
   await player.evaluate(video => video.dispatchEvent(new Event("loadedmetadata")));
   await expect(player).toHaveAttribute("data-mock-current-time", "10");
-  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 2 DE 2");
+  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 2 DE 3");
+
+  await page.clock.install();
+  await player.evaluate(video => video.dispatchEvent(new Event("ended")));
+  const countdown = page.getByTestId("player-auto-next-countdown");
+  await expect(countdown).toBeVisible();
+  await expect(page.getByTestId("player-auto-next-seconds")).toHaveText("8");
+  await page.getByTestId("player-auto-next-cancel").click();
+  await expect(countdown).toBeHidden();
+
+  await player.evaluate(video => video.dispatchEvent(new Event("ended")));
+  await expect(countdown).toBeVisible();
+  await page.clock.fastForward(8_000);
+  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 3 DE 3");
+  await expect(countdown).toBeHidden();
+
+  await player.evaluate(video => video.dispatchEvent(new Event("ended")));
+  await expect(countdown).toBeHidden();
 });
 
 test("Studio exposes local workspace and production navigation", async ({ page }) => {
