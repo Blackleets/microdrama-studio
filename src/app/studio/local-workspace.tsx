@@ -34,14 +34,16 @@ const sections:{id:Section;label:string;icon:LucideIcon;group:string}[]=[
 ];
 
 
-const RELEASE_QA_ITEMS = ["Guion, continuidad y cliffhanger revisados","Formato vertical 9:16 y duración revisados","Audio, mezcla y subtítulos revisados","Procedencia, licencias y permisos de activos revisados"];
+const RELEASE_QA_ITEMS = ["Guion, continuidad y cliffhanger revisados","Formato vertical 9:16 y duración revisados","Audio, mezcla y subtítulos revisados"];
 function ReleaseChecklist({seriesId,onReadyChange}:{seriesId:string;onReadyChange:(ready:boolean)=>void}){
  const key="microdrama-release-qa-v1:"+seriesId;
- const [checks,setChecks]=useState<boolean[]>([false,false,false,false]);
+ const [checks,setChecks]=useState<boolean[]>([false,false,false]);
  const [loaded,setLoaded]=useState(false);
- useEffect(()=>{try{const raw=localStorage.getItem(key);if(raw){const parsed=JSON.parse(raw);if(Array.isArray(parsed)&&parsed.length===RELEASE_QA_ITEMS.length)setChecks(parsed.map(Boolean));}}catch{}setLoaded(true);},[key]);
- useEffect(()=>{if(!loaded)return;localStorage.setItem(key,JSON.stringify(checks));onReadyChange(checks.every(Boolean));},[checks,loaded,key,onReadyChange]);
- return <div className="mt-3">{RELEASE_QA_ITEMS.map((item,i)=><label key={item} className="flex items-start gap-3 py-3 border-b border-[#252a36] last:border-0 cursor-pointer"><input type="checkbox" checked={checks[i]} onChange={e=>setChecks(p=>p.map((v,j)=>j===i?e.target.checked:v))} className="mt-0.5 accent-[#d6ff63]"/><span className="text-xs text-[#aeb7c6] leading-relaxed">{item}</span><span className="ml-auto text-[9px] text-[#687385]">{checks[i]?"OK":"PENDIENTE"}</span></label>)}<div className="mt-3 flex justify-between text-[10px] text-[#8792a3]"><span>{checks.filter(Boolean).length} / {checks.length} verificaciones</span><span className={checks.every(Boolean)?"text-[#d6ff63]":"text-[#d6a96b]"}>{checks.every(Boolean)?"LISTO PARA CATÁLOGO":"QA INCOMPLETO"}</span></div></div>;
+ const [assetRightsReady,setAssetRightsReady]=useState(false);
+ const [assetCount,setAssetCount]=useState(0);
+ useEffect(()=>{try{const raw=localStorage.getItem(key);if(raw){const parsed=JSON.parse(raw);if(Array.isArray(parsed)&&parsed.length===RELEASE_QA_ITEMS.length)setChecks(parsed.map(Boolean));}const assets=JSON.parse(localStorage.getItem("microdrama-assets-v1")||"[]") as {seriesId?:string;rights?:string}[];const linked=assets.filter(a=>a.seriesId===seriesId);setAssetCount(linked.length);setAssetRightsReady(linked.length>0&&linked.every(a=>a.rights==="Confirmado"));}catch{setAssetRightsReady(false);setAssetCount(0)}setLoaded(true);},[key,seriesId]);
+ useEffect(()=>{if(!loaded)return;localStorage.setItem(key,JSON.stringify(checks));onReadyChange(checks.every(Boolean)&&assetRightsReady);},[checks,loaded,key,onReadyChange,assetRightsReady]);
+ return <div className="mt-3">{RELEASE_QA_ITEMS.map((item,i)=><label key={item} className="flex items-start gap-3 py-3 border-b border-[#252a36] last:border-0 cursor-pointer"><input type="checkbox" checked={checks[i]} onChange={e=>setChecks(p=>p.map((v,j)=>j===i?e.target.checked:v))} className="mt-0.5 accent-[#d6ff63]"/><span className="text-xs text-[#aeb7c6] leading-relaxed">{item}</span><span className="ml-auto text-[9px] text-[#687385]">{checks[i]?"OK":"PENDIENTE"}</span></label>)}<div className="flex items-start gap-3 py-3 border-b border-[#252a36]"><ShieldCheck size={15} className={assetRightsReady?"text-[#d6ff63]":"text-[#d6a96b]"}/><span className="text-xs text-[#aeb7c6] leading-relaxed">Derechos de activos vinculados confirmados ({assetCount})</span><span className="ml-auto text-[9px] text-[#687385]">{assetRightsReady?"OK":"PENDIENTE"}</span></div><div className="mt-3 flex justify-between text-[10px] text-[#8792a3]"><span>{checks.filter(Boolean).length+Number(assetRightsReady)} / {checks.length+1} verificaciones</span><span className={checks.every(Boolean)&&assetRightsReady?"text-[#d6ff63]":"text-[#d6a96b]"}>{checks.every(Boolean)&&assetRightsReady?"LISTO PARA CATÁLOGO":"QA INCOMPLETO"}</span></div></div>;
 }
 
 export default function LocalWorkspace(){
