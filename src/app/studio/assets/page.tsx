@@ -24,6 +24,18 @@ function openMediaDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=
 async function saveMediaFile(id:string,file:File){const db=await openMediaDB();await new Promise<void>((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").put({id,file});tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});db.close();}
 async function getMediaFile(id:string):Promise<File|null>{const db=await openMediaDB();const result=await new Promise<File|null>((resolve,reject)=>{const request=db.transaction("files","readonly").objectStore("files").get(id);request.onsuccess=()=>resolve(request.result?.file??null);request.onerror=()=>reject(request.error);});db.close();return result;}
 async function removeMediaFile(id:string){const db=await openMediaDB();await new Promise<void>((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").delete(id);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});db.close();}
+async function probeMediaMetadata(file:File,kind:AssetKind):Promise<{width?:number;height?:number;durationSeconds?:number}>{
+ const src=URL.createObjectURL(file);
+ try{
+  if(kind==="Vídeo"||kind==="Audio"){
+   return await new Promise((resolve,reject)=>{const media=document.createElement(kind==="Vídeo"?"video":"audio");media.preload="metadata";media.onloadedmetadata=()=>{const data={...(kind==="Vídeo"?{width:media.videoWidth,height:media.videoHeight}:{}),...(Number.isFinite(media.duration)?{durationSeconds:Number(media.duration.toFixed(2))}:{})};media.removeAttribute("src");media.load();resolve(data);};media.onerror=()=>reject(new Error("No se pudieron leer los metadatos del archivo"));media.src=src;});
+  }
+  if(kind==="Imagen"){
+   return await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve({width:image.naturalWidth,height:image.naturalHeight});image.onerror=()=>reject(new Error("No se pudieron leer las dimensiones de la imagen"));image.src=src;});
+  }
+  return {};
+ }finally{URL.revokeObjectURL(src);}
+}
 
 export default function AssetRegistry(){
  const [assets,setAssets]=useState<Asset[]>([]);
@@ -38,6 +50,7 @@ export default function AssetRegistry(){
  const [selectedFile,setSelectedFile]=useState<File|null>(null);
  const [saving,setSaving]=useState(false);
  const [preview,setPreview]=useState<{asset:Asset;url:string}|null>(null);
+ const [probing,setProbing]=useState(false);
  const [rights,setRights]=useState<Rights>("Pendiente");
  const [license,setLicense]=useState("");
  const [version,setVersion]=useState("v1");
@@ -97,6 +110,14 @@ export default function AssetRegistry(){
   setWidth("");setHeight("");setFps("");setDuration("");setCodec("");setAudioTracks("");setSubtitleTracks("");setChecksum("");
   setRights("Pendiente");setEpisodeId("");setNotice("Activo y metadatos técnicos registrados en este navegador.");
  }
+ async function handleFileSelected(file:File|null){
+  setSelectedFile(file);
+  if(!file)return;
+  setProbing(true);
+  try{const metadata=await probeMediaMetadata(file,kind);if(metadata.width)setWidth(String(metadata.width));if(metadata.height)setHeight(String(metadata.height));if(metadata.durationSeconds)setDuration(String(metadata.durationSeconds));setNotice("Metadatos básicos extraídos del archivo seleccionado. FPS y códec deben confirmarse manualmente.");}
+  catch{setNotice("Archivo seleccionado. No se pudieron extraer sus metadatos automáticamente.");}
+  finally{setProbing(false);}
+ }
  function addVersion(asset:Asset){
   const nextNumber=Math.max(0,...assets.filter(a=>a.logicalId===asset.logicalId).map(a=>a.versionNumber))+1;
   const next:Asset={...asset,id:crypto.randomUUID(),version:"v"+nextNumber,versionNumber:nextNumber,versionStatus:"Actual",createdAt:new Date().toISOString(),rights:"Pendiente",fileId:undefined,fileName:undefined,fileSize:undefined,mimeType:undefined,url:"",notes:"Nueva versión basada en "+asset.version+" · Adjuntar el nuevo máster y revisar derechos."};
@@ -128,7 +149,7 @@ export default function AssetRegistry(){
       <Field label="Nombre del activo"><input value={title} onChange={e=>setTitle(e.target.value)} maxLength={100} placeholder="EP01_MASTER_FINAL" className="control"/></Field>
       <div className="grid grid-cols-2 gap-3"><Field label="Tipo"><select value={kind} onChange={e=>setKind(e.target.value as AssetKind)} className="control">{kinds.map(k=><option key={k}>{k}</option>)}</select></Field><Field label="Versión inicial"><input value={version} onChange={e=>setVersion(e.target.value)} placeholder="v1" className="control"/></Field></div>
       <Field label="Procedencia"><select value={source} onChange={e=>setSource(e.target.value)} className="control"><option>Generado por IA</option><option>Grabación propia</option><option>Proveedor externo</option><option>Stock / licencia</option><option>Cliente / talento</option></select></Field>
-      <Field label="Archivo maestro (máx. 500 MB)"><input type="file" accept={kind==="Vídeo"?"video/*":kind==="Imagen"?"image/*":kind==="Audio"?"audio/*":".pdf,.txt,.doc,.docx,.srt,.vtt"} onClick={e=>{e.currentTarget.value="";}} onChange={e=>setSelectedFile(e.target.files?.[0]??null)} className="control file:mr-3 file:rounded-md file:border-0 file:bg-[#d6ff63] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-black"/>{selectedFile&&<span className="block mt-2 text-[10px] text-[#d6ff63]">{selectedFile.name} · {(selectedFile.size/1024/1024).toFixed(1)} MB</span>}</Field>
+      <Field label="Archivo maestro (máx. 500 MB)"><input type="file" accept={kind==="Vídeo"?"video/*":kind==="Imagen"?"image/*":kind==="Audio"?"audio/*":".pdf,.txt,.doc,.docx,.srt,.vtt"} onClick={e=>{e.currentTarget.value="";}} onChange={e=>void handleFileSelected(e.target.files?.[0]??null)} className="control file:mr-3 file:rounded-md file:border-0 file:bg-[#d6ff63] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-black"/>{selectedFile&&<span className="block mt-2 text-[10px] text-[#d6ff63]">{selectedFile.name} · {(selectedFile.size/1024/1024).toFixed(1)} MB</span>}{probing&&<span className="block mt-1 text-[10px] text-[#aeb7c6]">Leyendo metadatos básicos…</span>}</Field>
       <Field label="URL externa (opcional)"><input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://…" className="control"/></Field>
       <Field label="Licencia / titularidad"><input value={license} onChange={e=>setLicense(e.target.value)} placeholder="Licencia comercial, cesión, consentimiento…" className="control"/></Field>
       <Field label="Estado de derechos"><select value={rights} onChange={e=>setRights(e.target.value as Rights)} className="control"><option>Pendiente</option><option>Confirmado</option><option>Restringido</option></select></Field>
@@ -136,7 +157,7 @@ export default function AssetRegistry(){
        <div className="grid grid-cols-2 gap-3"><Field label="Ancho (px)"><input type="number" min="1" value={width} onChange={e=>setWidth(e.target.value)} placeholder="1080" className="control"/></Field><Field label="Alto (px)"><input type="number" min="1" value={height} onChange={e=>setHeight(e.target.value)} placeholder="1920" className="control"/></Field><Field label="FPS"><input type="number" min="1" max="240" value={fps} onChange={e=>setFps(e.target.value)} placeholder="24" className="control"/></Field><Field label="Duración (seg.)"><input type="number" min="0" step="0.1" value={duration} onChange={e=>setDuration(e.target.value)} placeholder="90" className="control"/></Field><Field label="Códec"><input value={codec} onChange={e=>setCodec(e.target.value)} placeholder="H.264 / AAC" className="control"/></Field><Field label="Pistas de audio"><input type="number" min="0" value={audioTracks} onChange={e=>setAudioTracks(e.target.value)} placeholder="1" className="control"/></Field><Field label="Pistas de subtítulos"><input type="number" min="0" value={subtitleTracks} onChange={e=>setSubtitleTracks(e.target.value)} placeholder="1" className="control"/></Field><Field label="Checksum SHA-256"><input value={checksum} onChange={e=>setChecksum(e.target.value)} placeholder="Hash del archivo" className="control"/></Field></div>
       </div>
       <Field label="Notas"><textarea value={notes} onChange={e=>setNotes(e.target.value)} rows={3} placeholder="Restricciones, idiomas, revisión técnica…" className="control"/></Field>
-      <button onClick={addAsset} disabled={title.trim().length<2||!seriesId||saving} className="w-full rounded-lg bg-[#d6ff63] text-[#10140a] py-3 text-xs font-bold flex justify-center items-center gap-2 disabled:opacity-40"><Plus size={15}/> {saving?"Guardando archivo…":"Registrar activo"}</button>
+      <button onClick={addAsset} disabled={title.trim().length<2||!seriesId||saving||probing} className="w-full rounded-lg bg-[#d6ff63] text-[#10140a] py-3 text-xs font-bold flex justify-center items-center gap-2 disabled:opacity-40"><Plus size={15}/> {saving?"Guardando archivo…":"Registrar activo"}</button>
      </div>
     </section>
     <section className="rounded-2xl border border-[#252a36] bg-[#10141c] p-5 md:p-6">
