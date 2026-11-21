@@ -11,7 +11,7 @@ type Rights = "Pendiente" | "Confirmado" | "Restringido";
 type EpisodeOption = { id:string; title:string; number:number };
 type SeriesOption = { id:string; title:string; episodes?:EpisodeOption[] };
 type SubtitleReport={format:"SRT"|"VTT";cueCount:number;durationSeconds:number;errors:string[];language:string};
-type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleDurationSeconds?:number;subtitleLanguage?:string;audioLanguage?:string;subtitleValidation?:"Válido"|"Con errores";
+type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleDurationSeconds?:number;subtitleLanguage?:string;audioLanguage?:string;subtitleValidation?:"Válido"|"Con errores";subtitleBurnedIn?:boolean;
 
  id:string; logicalId:string; seriesId:string; seriesTitle:string; episodeId?:string; episodeTitle?:string;
  title:string; kind:AssetKind; assetRole?:AssetRole; source:string; url:string; rights:Rights; license:string;
@@ -166,7 +166,7 @@ export default function AssetRegistry(){
  }
  function addVersion(asset:Asset){
   const nextNumber=Math.max(0,...assets.filter(a=>a.logicalId===asset.logicalId).map(a=>a.versionNumber))+1;
-  const next:Asset={...asset,id:crypto.randomUUID(),version:"v"+nextNumber,versionNumber:nextNumber,versionStatus:"Actual",createdAt:new Date().toISOString(),rights:"Pendiente",fileId:undefined,fileName:undefined,fileSize:undefined,mimeType:undefined,url:"",width:undefined,height:undefined,fps:undefined,durationSeconds:undefined,codec:undefined,audioTracks:undefined,subtitleTracks:undefined,checksum:undefined,subtitleFormat:undefined,subtitleCueCount:undefined,subtitleDurationSeconds:undefined,subtitleLanguage:undefined,audioLanguage:undefined,subtitleValidation:undefined,notes:"Nueva versión basada en "+asset.version+" · Adjuntar el nuevo máster, volver a declarar metadatos y revisar derechos."};
+  const next:Asset={...asset,id:crypto.randomUUID(),version:"v"+nextNumber,versionNumber:nextNumber,versionStatus:"Actual",createdAt:new Date().toISOString(),rights:"Pendiente",fileId:undefined,fileName:undefined,fileSize:undefined,mimeType:undefined,url:"",width:undefined,height:undefined,fps:undefined,durationSeconds:undefined,codec:undefined,audioTracks:undefined,subtitleTracks:undefined,checksum:undefined,subtitleFormat:undefined,subtitleCueCount:undefined,subtitleDurationSeconds:undefined,subtitleLanguage:undefined,audioLanguage:undefined,subtitleValidation:undefined,subtitleBurnedIn:false,notes:"Nueva versión basada en "+asset.version+" · Adjuntar el nuevo máster, volver a declarar metadatos y revisar derechos."};
   setAssets(p=>p.map(a=>a.logicalId===asset.logicalId?{...a,versionStatus:"Archivada" as const}:a).concat(next));invalidateSeriesRelease(asset.seriesId);
   setExpanded(asset.logicalId);setNotice("Nueva versión creada. La versión anterior quedó archivada.");
  }
