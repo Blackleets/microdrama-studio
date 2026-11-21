@@ -24,7 +24,7 @@ The local registry supports manually entered:
 - Subtitle-track count
 - SHA-256 checksum
 
-Width, height, and duration are prefilled from browser-readable media metadata when possible. FPS, codec, track counts, and checksum remain operator-entered. The app does not inspect container internals or certify the media. SRT and WebVTT subtitle files are parsed locally for cue structure, timestamp format, ordering, overlapping intervals, non-empty text, and cue count. The language code and validation summary are stored with the asset. This is a structural check only: it does not assess translation quality, readability, synchronization against the video, or burned-in captions. The release gate checks the declared video-master metadata and requires a positive audio-track count; it does not inspect the underlying media container.
+Width, height, and duration are prefilled from browser-readable media metadata when possible. FPS, codec, track counts, and checksum remain operator-entered. The app does not inspect container internals or certify the media. SRT and WebVTT subtitle files are parsed locally for cue structure, timestamp format, ordering, overlapping intervals, non-empty text, and cue count. The language code and validation summary are stored with the asset. Imported subtitle files can also be previewed as plain text in the local asset viewer. This is a structural check only: it does not assess translation quality, readability, synchronization against the video, or burned-in captions. The release gate checks the declared video-master metadata and requires a positive audio-track count; it does not inspect the underlying media container.
 
 ## Release QA behavior
 
