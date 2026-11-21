@@ -4,8 +4,8 @@ AI-assisted production workspace for vertical micro-series, paired with a mobile
 
 ## Product surfaces
 
-- **Streaming App** at `/` and `/streaming`: discovery catalog, featured series, genre filters, search, saved list, series detail and vertical 9:16 player shell.
-- **Private Studio** at `/studio`: command center, story bible, character studio, script room, storyboard, AI production preparation, editorial approval, distribution and revenue planning.
+- **Streaming App** at `/` and `/streaming`: discovery catalog, featured series, genre filters, search, saved list, series detail and vertical 9:16 local media player.
+- **Local-first Studio** at `/studio`: command center, story bible, character studio, script room, storyboard, AI production preparation, editorial approval, distribution and revenue planning.
 - **Media Asset Registry** at `/studio/assets`: versioned production assets, episode linkage, browser-local file import/preview through IndexedDB, subtitle validation, language metadata and SHA-256 for supported file sizes.
 - **Post-production editor** at `/studio/post-production`: episode EDL with ordered scenes, duration planning, real local video/audio previews, audio/subtitle asset assignment and named edit snapshots.
 - **Local publishing bridge**: a series created in Studio can enter the local streaming catalog only after every episode has editorial status `Aprobado` and the owner publishes its catalog entry.
@@ -44,4 +44,4 @@ Supabase is not required for the current local-first workspace. The database mig
 
 ## Not yet implemented
 
-Actual audiovisual generation, rendered episode export, public streaming/CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, large-file checksum verification, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local asset preview is available only inside the Studio browser that imported the file.
+Actual audiovisual generation, rendered episode export, public streaming/CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, large-file checksum verification, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local media files are available to Studio and Streaming only in the browser profile that imported them.
