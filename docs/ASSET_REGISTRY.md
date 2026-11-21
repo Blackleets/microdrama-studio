@@ -24,11 +24,11 @@ The local registry supports manually entered:
 - Subtitle-track count
 - SHA-256 checksum
 
-These fields are declarations entered by the operator. The app does not probe media containers or calculate checksums.
+These fields are declarations entered by the operator. The app does not probe media containers or calculate checksums. The release gate checks the declared video-master metadata; it does not verify the underlying file.
 
 ## Release QA behavior
 
-The release gate evaluates only current asset versions linked to a series. At least one current linked asset must exist, and every such asset must have rights marked `Confirmado`. Archived versions do not block the current release gate.
+The release gate evaluates only current asset versions linked to a series. At least one current linked asset must exist, and every such asset must have rights marked `Confirmado`. At least one current video asset must also declare width, height, frame rate, duration, and codec, with a portrait 9:16 aspect ratio (within a small tolerance). Archived versions do not block the current release gate.
 
 Manual checks for story continuity, vertical framing, audio, and subtitles remain operator attestations. A green local gate is not a legal opinion, technical certification, or proof that a remote media URL works.
 
