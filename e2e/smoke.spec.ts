@@ -285,3 +285,72 @@ test("confirming asset rights requires operator acknowledgement and invalidates 
   const qa = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-release-qa-v1:rights-approval-series") || "[]"));
   expect(qa).toEqual([false, false, false]);
 });
+
+test("local backup restore validates the format and replaces workspace metadata", async ({ page }) => {
+  await page.goto("/studio");
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "before-restore",
+      title: "Current Workspace",
+      episodes: [],
+      characters: [],
+      status: "Desarrollo",
+    }]));
+  });
+  await page.reload();
+  const backup = {
+    format: "microdrama-local-backup",
+    schemaVersion: 1,
+    exportedAt: new Date().toISOString(),
+    series: [{
+      id: "restored-series",
+      title: "Restored Series",
+      logline: "Backup test",
+      genre: "Drama",
+      style: "Vertical",
+      status: "Desarrollo",
+      updatedAt: new Date().toISOString(),
+      characters: [],
+      episodes: [{ id: "restored-episode", title: "Episode 1", number: 1, status: "Borrador", duration: 90, script: "A valid restored script", scenes: [] }],
+      bible: "Restored story bible",
+    }],
+    localData: { "microdrama-watchlist-v1": ["restored-series"] },
+    mediaBlobsIncluded: false,
+  };
+  page.once("dialog", dialog => dialog.accept());
+  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+    name: "microdrama-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(backup)),
+  });
+  await expect(page.getByText(/Copia restaurada/)).toBeVisible();
+  const restored = await page.evaluate(() => ({
+    series: JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]"),
+    watchlist: JSON.parse(localStorage.getItem("microdrama-watchlist-v1") || "[]"),
+  }));
+  expect(restored.series[0].id).toBe("restored-series");
+  expect(restored.series[0].episodes[0].id).toBe("restored-episode");
+  expect(restored.watchlist).toEqual(["restored-series"]);
+});
+
+test("invalid local backup does not overwrite existing workspace", async ({ page }) => {
+  await page.goto("/studio");
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "keep-series",
+      title: "Keep This Series",
+      episodes: [],
+      characters: [],
+      status: "Desarrollo",
+    }]));
+  });
+  await page.reload();
+  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+    name: "invalid-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify({ format: "wrong-format", schemaVersion: 99, series: [] })),
+  });
+  await expect(page.getByText(/no pertenece a una versión compatible/)).toBeVisible();
+  const current = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]"));
+  expect(current[0].id).toBe("keep-series");
+});
