@@ -23,20 +23,20 @@ const asNumber=(value:string)=>value.trim()===""?undefined:Number(value);
 function parseSubtitleFile(text:string,name:string):Omit<SubtitleReport,"language">{
  const format=name.toLowerCase().endsWith(".vtt")?"VTT":"SRT";
  const errors:string[]=[];
- const normalized=text.replace(/^\\uFEFF/,"").replace(/\\r/g,"").trim();
+ const normalized=text.replace(/^\uFEFF/,"").replace(/\r/g,"").trim();
  if(format==="VTT"&&!normalized.startsWith("WEBVTT"))errors.push("Falta la cabecera WEBVTT.");
- const blocks=normalized.split(/\\n\\s*\\n/).filter(Boolean);
- const timePattern=/(\\d{2}:)?\\d{2}:\\d{2}[.,]\\d{3}\\s+-->\\s+(\\d{2}:)?\\d{2}:\\d{2}[.,]\\d{3}/;
+ const blocks=normalized.split(/\n\s*\n/).filter(Boolean);
+ const timePattern=/(\d{2}:)?\d{2}:\d{2}[.,]\d{3}\s+-->\s+(\d{2}:)?\d{2}:\d{2}[.,]\d{3}/;
  const timestamp=(value:string)=>{const v=value.trim().replace(",",".");const parts=v.split(":");const sec=Number(parts.pop());const min=Number(parts.pop());const hour=parts.length?Number(parts.pop()):0;return hour*3600+min*60+sec;};
  let cueCount=0;let previousStart=-1;
  for(const block of blocks){
-  if(format==="VTT"&&/^(WEBVTT|NOTE|STYLE|REGION)(\\s|$)/.test(block))continue;
-  const lines=block.split("\\n").map(x=>x.trim()).filter(Boolean);
+  if(format==="VTT"&&/^(WEBVTT|NOTE|STYLE|REGION)(\s|$)/.test(block))continue;
+  const lines=block.split("\n").map(x=>x.trim()).filter(Boolean);
   const index=lines.findIndex(line=>timePattern.test(line));
   if(index<0)continue;
   cueCount++;
   const times=lines[index].split("-->");
-  const start=timestamp(times[0]);const end=timestamp(times[1].split(/\\s+/)[0]);
+  const start=timestamp(times[0]);const end=timestamp(times[1].split(/\s+/)[0]);
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)errors.push("Cue "+cueCount+": intervalo de tiempo inválido.");
   if(start<previousStart)errors.push("Cue "+cueCount+": los tiempos no están ordenados.");
   if(start>=previousStart)previousStart=start;
