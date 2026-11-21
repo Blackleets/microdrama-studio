@@ -28,7 +28,7 @@ function parseSubtitleFile(text:string,name:string):Omit<SubtitleReport,"languag
  const blocks=normalized.split(/\n\s*\n/).filter(Boolean);
  const timePattern=/(\d{2}:)?\d{2}:\d{2}[.,]\d{3}\s+-->\s+(\d{2}:)?\d{2}:\d{2}[.,]\d{3}/;
  const timestamp=(value:string)=>{const v=value.trim().replace(",",".");const parts=v.split(":");const sec=Number(parts.pop());const min=Number(parts.pop());const hour=parts.length?Number(parts.pop()):0;return hour*3600+min*60+sec;};
- let cueCount=0;let previousStart=-1;
+ let cueCount=0;let previousStart=-1;let previousEnd=-1;
  for(const block of blocks){
   if(format==="VTT"&&/^(WEBVTT|NOTE|STYLE|REGION)(\s|$)/.test(block))continue;
   const lines=block.split("\n").map(x=>x.trim()).filter(Boolean);
@@ -40,6 +40,8 @@ function parseSubtitleFile(text:string,name:string):Omit<SubtitleReport,"languag
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)errors.push("Cue "+cueCount+": intervalo de tiempo inválido.");
   if(start<previousStart)errors.push("Cue "+cueCount+": los tiempos no están ordenados.");
   if(start>=previousStart)previousStart=start;
+  if(start<previousEnd)errors.push("Cue "+cueCount+": se solapa con el cue anterior.");
+  if(end>previousEnd)previousEnd=end;
   if(!lines.slice(index+1).join(" ").trim())errors.push("Cue "+cueCount+": texto vacío.");
  }
  if(cueCount===0)errors.push("No se encontraron bloques de subtítulos con marcas de tiempo.");
