@@ -21,7 +21,10 @@ export default function PostProductionPage(){
  const [series,setSeries]=useState<Series[]>([]),[assets,setAssets]=useState<Asset[]>([]);
  const [seriesId,setSeriesId]=useState(""),[episodeId,setEpisodeId]=useState("");
  const [edit,setEdit]=useState<Edit|null>(null),[snapshots,setSnapshots]=useState<Snapshot[]>([]),[loadedEpisodeId,setLoadedEpisodeId]=useState("");
- const [snapshotName,setSnapshotName]=useState(""),[notice,setNotice]=useState("Montaje guardado localmente."),[ready,setReady]=useState(false);\n const [previewAssetId,setPreviewAssetId]=useState("");\n const [previewUrl,setPreviewUrl]=useState("");\n const [previewError,setPreviewError]=useState("");
+ const [snapshotName,setSnapshotName]=useState(""),[notice,setNotice]=useState("Montaje guardado localmente."),[ready,setReady]=useState(false);
+ const [previewAssetId,setPreviewAssetId]=useState("");
+ const [previewUrl,setPreviewUrl]=useState("");
+ const [previewError,setPreviewError]=useState("");
  useEffect(()=>{try{const ss=JSON.parse(localStorage.getItem(SERIES_KEY)||"[]") as Series[];const aa=JSON.parse(localStorage.getItem(ASSETS_KEY)||"[]") as Asset[];setSeries(ss);setAssets(aa.filter(a=>a.versionStatus!=="Archivada"));const first=ss.find(s=>s.episodes?.length);if(first){setSeriesId(first.id);setEpisodeId(first.episodes[0].id);}}catch{setNotice("No se pudieron leer los datos locales.");}setReady(true);},[]);
  const active=series.find(s=>s.id===seriesId),episodes=active?.episodes||[],episode=episodes.find(e=>e.id===episodeId);
  const linked=useMemo(()=>assets.filter(a=>a.seriesId===seriesId&&(!a.episodeId||a.episodeId===episodeId)&&!!a.fileId),[assets,seriesId,episodeId]);
