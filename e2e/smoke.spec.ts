@@ -23,7 +23,7 @@ test("streaming player navigates between episodes and clamps at both ends", asyn
   });
   await page.goto("/streaming");
   await page.locator(".show-poster").filter({ hasText: "PLAYER NAV TEST" }).click();
-  await page.getByRole("button", { name: /Ver episodio 1/ }).click();
+  await page.getByRole("dialog", { name: "Player Nav Test" }).getByRole("button", { name: "Ver episodio 1" }).click();
 
   const position = page.getByTestId("player-episode-position");
   const previous = page.getByTestId("player-previous-episode");
