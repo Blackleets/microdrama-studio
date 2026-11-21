@@ -12,6 +12,16 @@ AI-assisted production workspace for vertical micro-series, paired with a mobile
 - **Hybrid production**: live-action AI and animated-universe adapters are planned, with owner approval required before release.
 - **Business model**: free episodes, premium unlocks and subscriptions are designed; payment processing is not connected.
 
+## Validation commands
+
+```bash
+npm run lint
+npm run build
+npm run test:e2e
+```
+
+GitHub Actions runs dependency auditing, lint, production build and Chromium browser smoke tests.
+
 ## Current development mode
 
 The product runs in **local-first mode** so development can continue before the Supabase project is available.
