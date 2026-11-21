@@ -28,7 +28,7 @@ async function probeMediaMetadata(file:File,kind:AssetKind):Promise<{width?:numb
  const src=URL.createObjectURL(file);
  try{
   if(kind==="Vídeo"||kind==="Audio"){
-   return await new Promise((resolve,reject)=>{const media=document.createElement(kind==="Vídeo"?"video":"audio");media.preload="metadata";media.onloadedmetadata=()=>{const data={...(kind==="Vídeo"?{width:media.videoWidth,height:media.videoHeight}:{}),...(Number.isFinite(media.duration)?{durationSeconds:Number(media.duration.toFixed(2))}:{})};media.removeAttribute("src");media.load();resolve(data);};media.onerror=()=>reject(new Error("No se pudieron leer los metadatos del archivo"));media.src=src;});
+   return await new Promise((resolve,reject)=>{const media=document.createElement(kind==="Vídeo"?"video":"audio");media.preload="metadata";media.onloadedmetadata=()=>{const data={...(kind==="Vídeo"?{width:(media as HTMLVideoElement).videoWidth,height:(media as HTMLVideoElement).videoHeight}:{}),...(Number.isFinite(media.duration)?{durationSeconds:Number(media.duration.toFixed(2))}:{})};media.removeAttribute("src");media.load();resolve(data);};media.onerror=()=>reject(new Error("No se pudieron leer los metadatos del archivo"));media.src=src;});
   }
   if(kind==="Imagen"){
    return await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve({width:image.naturalWidth,height:image.naturalHeight});image.onerror=()=>reject(new Error("No se pudieron leer las dimensiones de la imagen"));image.src=src;});
