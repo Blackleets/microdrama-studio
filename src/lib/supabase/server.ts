@@ -3,13 +3,14 @@ import { cookies } from "next/headers";
 
 export async function createClient() {
   const cookieStore = await cookies();
+  type CookieToSet = { name: string; value: string; options?: Parameters<typeof cookieStore.set>[2] };
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) throw new Error("Supabase is not configured. Add the project URL and publishable key.");
   return createServerClient(url, key, {
     cookies: {
       getAll() { return cookieStore.getAll(); },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: CookieToSet[]) {
         try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); }
         catch { /* Middleware refreshes cookies for Server Components. */ }
       },
