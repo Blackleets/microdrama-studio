@@ -7,7 +7,7 @@ AI-assisted production workspace for vertical micro-series, paired with a mobile
 - **Streaming App** at `/` and `/streaming`: discovery catalog, featured series, genre filters, search, saved list, series detail and vertical 9:16 local media player.
 - **Local-first Studio** at `/studio`: command center, story bible, character studio, script room, storyboard, AI production preparation, editorial approval, distribution and revenue planning.
 - **Media Asset Registry** at `/studio/assets`: versioned production assets with master/scene/trailer/reference roles, episode linkage, browser-local file import/preview through IndexedDB, subtitle validation, language metadata and SHA-256 for supported file sizes.
-- **Post-production editor** at `/studio/post-production`: episode EDL with ordered scenes, source in/out points, cumulative timecodes, local video/audio previews, audio/subtitle assignment, named snapshots and JSON export.
+- **Post-production editor** at `/studio/post-production`: episode EDL with ordered scenes, source in/out points, cumulative timecodes, local previews, audio/subtitle assignment, named snapshots, JSON export and a browser-local WebM renderer that creates a real vertical master.
 - **Local publishing bridge**: a series created in Studio can enter the local streaming catalog only after every episode has editorial status `Aprobado`, the release QA gate passes, and the owner publishes its catalog entry.
 - **Hybrid production**: live-action AI and animated-universe adapters are planned, with owner approval required before release.
 - **Business model**: free episodes, premium unlocks and subscriptions are designed; payment processing is not connected.
@@ -31,7 +31,7 @@ The product runs in **local-first mode** so development can continue before the 
 - Streaming watchlist is saved in browser localStorage.
 - Published Studio series are read from the same browser's local Studio data and shown in the streaming catalog after editorial approval.
 - The streaming player can play approved episode masters stored in this browser profile via IndexedDB and attach validated local SRT/WebVTT captions when available. Catalog-only/demo titles without a local master are clearly marked as unavailable. This is local playback, not public CDN delivery.
-- Post-production edits are local EDL data: source in/out points are stored as render instructions and exported to JSON. The editor previews original files but does not physically trim, mix, transcode or render a finished episode.
+- Post-production edits are local EDL data: source in/out points are stored as render instructions and exported to JSON. The browser renderer assembles assigned clips with hard cuts, mixes their audio and an optional soundtrack, and can burn in validated captions. It saves a real WebM master into IndexedDB; it does not export MP4 or add transitions.
 - Script structure preparation remains available locally. Optional Gemini script generation works without Supabase when the server has `GEMINI_API_KEY`, an explicitly selected `GEMINI_MODEL` and `LOCAL_STUDIO_AI_TOKEN`; the Google key remains server-side.
 - Local data is specific to the current browser/device. A manual JSON backup covers Studio metadata and edit plans, but not IndexedDB media blobs; there is no cloud backup or cross-device synchronization.
 
@@ -58,4 +58,4 @@ Supabase is not required for the current local-first workspace. The database mig
 
 ## Not yet implemented
 
-Actual audiovisual generation, rendered episode export, public streaming/CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, large-file checksum verification, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local media files are available to Studio and Streaming only in the browser profile that imported them.
+AI image/video/voice generation, MP4/server-side rendering and transitions, public streaming/CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, large-file checksum verification, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local media files are available to Studio and Streaming only in the browser profile that imported them.
