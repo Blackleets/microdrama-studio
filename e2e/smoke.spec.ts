@@ -213,4 +213,5 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   const localPlayer = page.locator(".vertical-player video");
   await expect(localPlayer).toBeVisible();
   await expect(localPlayer).toHaveAttribute("src", /^blob:/);
+  await expect(localPlayer.locator("track")).toHaveCount(0);
 });
