@@ -85,21 +85,39 @@ export default function LocalWorkspace(){
   const backup=parsed as {format?:string;schemaVersion?:number;series?:unknown;localData?:unknown};
   if(backup.format!=="microdrama-local-backup"||backup.schemaVersion!==1||!Array.isArray(backup.series)||backup.series.length>100){setNotice("La copia no pertenece a una versión compatible de MicroDrama Studio.");return;}
   const imported=backup.series as Series[];
-  const valid=imported.every(item=>item&&typeof item==="object"&&typeof item.id==="string"&&item.id.length>0&&typeof item.title==="string"&&Array.isArray(item.episodes)&&Array.isArray(item.characters)&&item.episodes.length<=500&&item.characters.length<=500&&item.episodes.every(ep=>ep&&typeof ep.id==="string"&&typeof ep.title==="string"&&typeof ep.script==="string")&&item.characters.every(character=>character&&typeof character.id==="string"&&typeof character.name==="string"));
-  if(!valid||new Set(imported.map(item=>item.id)).size!==imported.length){setNotice("La estructura de series, episodios o personajes está incompleta o duplicada. No se ha importado nada.");return;}
-  const allowedKey=(key:string)=>key==="microdrama-assets-v1"||key==="microdrama-watchlist-v1"||key.startsWith("microdrama-release-qa-v1:")||key.startsWith("microdrama-edit-timeline-v1:")||key.startsWith("microdrama-edit-snapshots-v1:");
-  const localData=backup.localData&&typeof backup.localData==="object"&&!Array.isArray(backup.localData)?backup.localData as Record<string,unknown>:{};
+  const validSeries=imported.every(item=>
+   item&&typeof item==="object"&&typeof item.id==="string"&&item.id.trim().length>0&&item.id.length<=160&&
+   typeof item.title==="string"&&item.title.trim().length>0&&item.title.length<=200&&
+   typeof item.logline==="string"&&typeof item.genre==="string"&&typeof item.style==="string"&&
+   typeof item.status==="string"&&typeof item.updatedAt==="string"&&typeof item.bible==="string"&&
+   Array.isArray(item.episodes)&&item.episodes.length<=500&&Array.isArray(item.characters)&&item.characters.length<=500&&
+   item.episodes.every(ep=>ep&&typeof ep==="object"&&typeof ep.id==="string"&&ep.id.trim().length>0&&ep.id.length<=160&&typeof ep.title==="string"&&ep.title.trim().length>0&&ep.title.length<=200&&Number.isFinite(ep.number)&&Number.isFinite(ep.duration)&&typeof ep.status==="string"&&typeof ep.script==="string"&&Array.isArray(ep.scenes)&&ep.scenes.length<=500&&ep.scenes.every(scene=>typeof scene==="string"))&&
+   item.characters.every(character=>character&&typeof character==="object"&&typeof character.id==="string"&&character.id.trim().length>0&&character.id.length<=160&&typeof character.name==="string"&&character.name.trim().length>0&&character.name.length<=120&&typeof character.role==="string"&&typeof character.description==="string")
+  );
+  const uniqueIds=(items:{id:string}[])=>new Set(items.map(item=>item.id)).size===items.length;
+  if(!validSeries||!uniqueIds(imported)||imported.some(item=>!uniqueIds(item.episodes)||!uniqueIds(item.characters))){setNotice("La estructura de series, episodios o personajes está incompleta o duplicada. No se ha importado nada.");return;}
+  const allowedKey=(key:string)=>key==="microdrama-assets-v1"||key==="microdrama-watchlist-v1"||/^microdrama-(release-qa|edit-timeline|edit-snapshots)-v1:.+$/.test(key);
+  if(backup.localData!==undefined&&(!backup.localData||typeof backup.localData!=="object"||Array.isArray(backup.localData))){setNotice("Los datos auxiliares de la copia no tienen un formato válido.");return;}
+  const localData=(backup.localData||{}) as Record<string,unknown>;
   const entries=Object.entries(localData);
-  if(entries.length>2000||entries.some(([key,value])=>!allowedKey(key)||value===undefined)){setNotice("La copia contiene datos auxiliares no permitidos. No se ha importado nada.");return;}
-  if(!confirm("Se reemplazarán las series y los datos auxiliares locales de este navegador. Los archivos multimedia de IndexedDB no están incluidos en la copia y no se restaurarán. ¿Continuar?"))return;
-  const keys=new Set<string>([STORAGE_KEY,...entries.map(([key])=>key)]);
+  let serializedSize=0;
+  try{serializedSize=JSON.stringify(localData).length;}catch{setNotice("Los datos auxiliares no se pueden leer.");return;}
+  if(entries.length>2000||serializedSize>8*1024*1024||entries.some(([key,value])=>!allowedKey(key)||value===undefined||typeof value==="function"||typeof value==="symbol")){setNotice("La copia contiene datos auxiliares no permitidos o supera el límite de tamaño.");return;}
+  if(entries.some(([key,value])=>(key==="microdrama-assets-v1"||key==="microdrama-watchlist-v1")&&!Array.isArray(value))){setNotice("El registro de activos o la lista guardada tienen una estructura no válida.");return;}
+  if(entries.some(([key,value])=>key.startsWith("microdrama-release-qa-v1:")&&(!Array.isArray(value)||value.length!==3||!value.every(item=>typeof item==="boolean")))){setNotice("La copia contiene una lista de QA no válida.");return;}
+  if(!confirm("Se reemplazarán las series y todos los datos auxiliares locales compatibles de este navegador. Los archivos multimedia de IndexedDB no están incluidos y no se restaurarán. ¿Continuar?"))return;
+  const existingKeys:string[]=[];
+  for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&(key===STORAGE_KEY||allowedKey(key)))existingKeys.push(key);}
+  const nextKeys=new Set<string>([STORAGE_KEY,...entries.map(([key])=>key)]);
+  const keys=new Set<string>([...existingKeys,...nextKeys]);
   const previous=new Map<string,string|null>();
   keys.forEach(key=>previous.set(key,localStorage.getItem(key)));
   try{
    localStorage.setItem(STORAGE_KEY,JSON.stringify(imported));
+   for(const key of existingKeys){if(key!==STORAGE_KEY&&!nextKeys.has(key))localStorage.removeItem(key);}
    for(const [key,value] of entries)localStorage.setItem(key,JSON.stringify(value));
    setSeries(imported);setActiveId(imported[0]?.id??"");setSelectedEpisode("");setSection("overview");setQaReady(false);setQaRevision(value=>value+1);
-   setNotice("Copia restaurada. Comprueba los activos y vuelve a importar los archivos multimedia que no estén en este navegador.");
+   setNotice("Copia restaurada. Los datos auxiliares anteriores se sustituyeron; vuelve a importar los archivos multimedia que no estén en este navegador.");
   }catch{
    for(const [key,value] of previous){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{}}
    setNotice("No se pudo completar la restauración por falta de espacio. Se intentó recuperar el estado anterior.");
