@@ -77,7 +77,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
     const videoBlob = await videoBlobPromise;
     stream.getTracks().forEach(track => track.stop());
     const sourceFile = new File([videoBlob], "scene.webm", { type: "video/webm" });
-    const subtitleFile = new File(["1\\n00:00:00,000 --> 00:00:00,800\\nRender subtitle"], "captions.srt", { type: "text/plain" });
+    const subtitleFile = new File(["1\n00:00:00,000 --> 00:00:00,800\nRender subtitle"], "captions.srt", { type: "text/plain" });
 
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open("microdrama-media-v1", 1);
