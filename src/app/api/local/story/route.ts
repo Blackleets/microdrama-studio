@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     "ESTILO VISUAL: " + bounded(series.style, 120),
     "BIBLIA Y REGLAS: " + bounded(series.bible, 5000),
     "PERSONAJES: " + JSON.stringify(characters),
-    "EPISODIOS ANTERIORES: " + JSON.stringify(Array.isArray(input.previousEpisodes) ? input.previousEpisodes.slice(-5).map(item => ({ number: Number(item.number) || 0, title: bounded(item.title, 100), synopsis: bounded(item.synopsis, 500), script: bounded(item.script, 1200) })) : []),
+    "EPISODIOS ANTERIORES: " + JSON.stringify(Array.isArray(input.previousEpisodes) ? input.previousEpisodes.filter(item => item && typeof item === "object").slice(-5).map(item => ({ number: Number(item.number) || 0, title: bounded(item.title, 100), synopsis: bounded(item.synopsis, 500), script: bounded(item.script, 1200) })) : []),
     "EPISODIO " + Math.max(1, Math.min(999, Number(episode.number) || 1)) + ": " + episodeTitle,
     "SINOPSIS: " + bounded(episode.synopsis, 1000),
     "INDICACIONES DEL CREADOR: " + bounded(input.brief, 3000),
