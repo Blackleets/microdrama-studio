@@ -254,7 +254,7 @@ test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
   await page.getByLabel("Serie asociada").selectOption("subtitle-series");
   await page.getByLabel("Nombre del activo").fill("Overlapping captions");
   await page.getByLabel("Tipo").selectOption("Documento");
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByTestId("asset-file-input").setInputFiles({
     name: "overlap.srt",
     mimeType: "text/plain",
     buffer: Buffer.from("1\n00:00:00,000 --> 00:00:02,000\nFirst line\n\n2\n00:00:01,000 --> 00:00:03,000\nSecond line"),
@@ -320,7 +320,7 @@ test("local backup restore validates the format and replaces workspace metadata"
     mediaBlobsIncluded: false,
   };
   page.once("dialog", dialog => dialog.accept());
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "microdrama-backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(backup)),
@@ -352,7 +352,7 @@ test("invalid local backup does not overwrite existing workspace", async ({ page
     }]));
   });
   await page.reload();
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "invalid-backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify({ format: "wrong-format", schemaVersion: 99, series: [] })),
@@ -397,7 +397,7 @@ test("malformed local backup metadata is rejected without modifying workspace", 
     }],
     localData: { "microdrama-release-qa-v1:bad-series": [true, "yes", false] },
   };
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "malformed-backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(malformed)),
@@ -459,7 +459,7 @@ test("exported local backup can be imported as a round trip", async ({ page }) =
   });
   await page.reload();
   page.once("dialog", dialog => dialog.accept());
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "roundtrip-backup.json",
     mimeType: "application/json",
     buffer: backupBuffer,
