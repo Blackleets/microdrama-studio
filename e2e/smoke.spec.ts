@@ -63,6 +63,8 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
     const stream = canvas.captureStream(15);
     const recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
     const chunks: Blob[] = [];
+    let frameNumber = 0;
+    const frameTimer = window.setInterval(() => { context.fillStyle = frameNumber++ % 2 ? "#7347a8" : "#426b91"; context.fillRect(0, 0, canvas.width, canvas.height); }, 100);
     const videoBlobPromise = new Promise<Blob>((resolve, reject) => {
       recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
       recorder.onerror = () => reject(new Error("Could not create synthetic test video"));
@@ -71,6 +73,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
     recorder.start();
     await new Promise(resolve => window.setTimeout(resolve, 1400));
     recorder.stop();
+    window.clearInterval(frameTimer);
     const videoBlob = await videoBlobPromise;
     stream.getTracks().forEach(track => track.stop());
     const sourceFile = new File([videoBlob], "scene.webm", { type: "video/webm" });
