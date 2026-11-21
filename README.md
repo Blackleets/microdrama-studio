@@ -6,7 +6,8 @@ AI-assisted production workspace for vertical micro-series, paired with a mobile
 
 - **Streaming App** at `/` and `/streaming`: discovery catalog, featured series, genre filters, search, saved list, series detail and vertical 9:16 player shell.
 - **Private Studio** at `/studio`: command center, story bible, character studio, script room, storyboard, AI production preparation, editorial approval, distribution and revenue planning.
-- **Media Asset Registry** at `/studio/assets`: versioned production assets, episode linkage, browser-local file import/preview through IndexedDB, subtitle validation, language metadata and SHA-256 for supported file sizes.\n- **Post-production editor** at `/studio/post-production`: episode EDL with ordered scenes, duration planning, real local video/audio previews, audio/subtitle asset assignment and named edit snapshots.
+- **Media Asset Registry** at `/studio/assets`: versioned production assets, episode linkage, browser-local file import/preview through IndexedDB, subtitle validation, language metadata and SHA-256 for supported file sizes.
+- **Post-production editor** at `/studio/post-production`: episode EDL with ordered scenes, duration planning, real local video/audio previews, audio/subtitle asset assignment and named edit snapshots.
 - **Local publishing bridge**: a series created in Studio can enter the local streaming catalog only after every episode has editorial status `Aprobado` and the owner publishes its catalog entry.
 - **Hybrid production**: live-action AI and animated-universe adapters are planned, with owner approval required before release.
 - **Business model**: free episodes, premium unlocks and subscriptions are designed; payment processing is not connected.
@@ -20,10 +21,15 @@ The product runs in **local-first mode** so development can continue before the 
 - Streaming watchlist is saved in browser localStorage.
 - Published Studio series are read from the same browser's local Studio data and shown in the streaming catalog after editorial approval.
 - The streaming player can play approved episode masters stored in this browser profile via IndexedDB and attach validated local SRT/WebVTT captions when available. Catalog-only/demo titles without a local master are clearly marked as unavailable. This is local playback, not public CDN delivery.
-- Post-production edits are local EDL data: the editor previews original files but does not trim, mix, transcode or render a finished episode.\n- Script structure preparation remains available locally; external AI generation requires a configured and verified provider key/model.
+- Post-production edits are local EDL data: the editor previews original files but does not trim, mix, transcode or render a finished episode.
+- Script structure preparation remains available locally; external AI generation requires a configured and verified provider key/model.
 - Local data is specific to the current browser/device. It is not backed up or synchronized across devices.
 
-## End-to-end local workflow\n\nSee [the local-first production workflow](docs/LOCAL_FIRST_WORKFLOW.md) for the full path from series creation and asset import through QA, local publishing and browser playback.\n\n## Stack
+## End-to-end local workflow
+
+See [the local-first production workflow](docs/LOCAL_FIRST_WORKFLOW.md) for the full path from series creation and asset import through QA, local publishing and browser playback.
+
+## Stack
 
 Next.js 15, React 19, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
 
