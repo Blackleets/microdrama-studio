@@ -11,7 +11,7 @@ The Asset Registry is a browser-local production inventory. Media files can be i
 
 ## Series and episode linkage
 
-An asset can be linked to a series and optionally to one episode. Series-level assets can represent key art, trailers, music packages, or shared production documents. Episode-level assets can represent the episode master, scene renders, dialogue stems, subtitles, or other deliverables.
+An asset can be linked to a series and optionally to one episode. Video assets have an explicit role: `Máster de episodio`, `Clip de escena`, `Tráiler`, or `Referencia`. The streaming catalog selects only current episode masters. The release gate validates episode masters only; scene clips, trailers and references do not count as final delivery masters. Existing video records without a role are treated as episode masters for backward compatibility. Series-level assets can represent key art, music packages, or shared production documents. Episode-level assets can represent the episode master, scene renders, dialogue stems, subtitles, or other deliverables.
 
 ## Technical master metadata
 
@@ -28,7 +28,7 @@ Width, height, and duration are prefilled from browser-readable media metadata w
 
 ## Release QA behavior
 
-The release gate evaluates only current asset versions linked to a series. Every episode must have a current video master linked to that episode, with a locally attached file, manually declared dimensions, frame rate, duration, codec, a positive audio-track count, and portrait 9:16 aspect ratio. Every episode must also have at least one current locally attached SRT or WebVTT document that passes structural validation, contains at least one cue, and whose final cue does not exceed the linked master duration by more than 0.5 seconds. Every current asset linked to the series must have rights marked `Confirmado`. Archived versions do not block the current release gate.
+The release gate evaluates only current asset versions linked to a series. Every episode must have a current video asset whose role is `Máster de episodio` (or a legacy video without a role) linked to that episode, with a locally attached file, manually declared dimensions, frame rate, duration, codec, a positive audio-track count, and portrait 9:16 aspect ratio. Every episode must also have at least one current locally attached SRT or WebVTT document that passes structural validation, contains at least one cue, and whose final cue does not exceed the linked master duration by more than 0.5 seconds. Every current asset linked to the series must have rights marked `Confirmado`. Archived versions do not block the current release gate.
 
 Manual checks for story continuity, vertical framing, audio, and subtitles remain operator attestations. A green local gate is not a legal opinion, technical certification, or proof that a remote media URL works.
 
