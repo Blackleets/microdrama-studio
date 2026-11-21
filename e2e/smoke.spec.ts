@@ -157,6 +157,7 @@ test("continue watching opens the saved episode and restores its playback positi
   await expect(countdown).toBeVisible();
   await page.clock.fastForward(8_000);
   await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 3 DE 3");
+  await expect(player).toHaveAttribute("src", /^blob:/);
   await expect(countdown).toBeHidden();
 
   await player.evaluate(video => video.dispatchEvent(new Event("ended")));
