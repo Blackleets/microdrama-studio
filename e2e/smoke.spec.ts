@@ -78,6 +78,26 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
     stream.getTracks().forEach(track => track.stop());
     const sourceFile = new File([videoBlob], "scene.webm", { type: "video/webm" });
     const subtitleFile = new File(["1\n00:00:00,000 --> 00:00:00,800\nRender subtitle"], "captions.srt", { type: "text/plain" });
+    const sampleRate = 22_050;
+    const sampleCount = Math.floor(sampleRate * 1.2);
+    const audioBuffer = new ArrayBuffer(44 + sampleCount * 2);
+    const audioView = new DataView(audioBuffer);
+    const writeAscii = (offset: number, value: string) => { for (let i = 0; i < value.length; i++) audioView.setUint8(offset + i, value.charCodeAt(i)); };
+    writeAscii(0, "RIFF");
+    audioView.setUint32(4, 36 + sampleCount * 2, true);
+    writeAscii(8, "WAVE");
+    writeAscii(12, "fmt ");
+    audioView.setUint32(16, 16, true);
+    audioView.setUint16(20, 1, true);
+    audioView.setUint16(22, 1, true);
+    audioView.setUint32(24, sampleRate, true);
+    audioView.setUint32(28, sampleRate * 2, true);
+    audioView.setUint16(32, 2, true);
+    audioView.setUint16(34, 16, true);
+    writeAscii(36, "data");
+    audioView.setUint32(40, sampleCount * 2, true);
+    for (let i = 0; i < sampleCount; i++) audioView.setInt16(44 + i * 2, Math.sin(2 * Math.PI * 440 * i / sampleRate) * 4500, true);
+    const soundtrackFile = new File([audioBuffer], "score.wav", { type: "audio/wav" });
 
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open("microdrama-media-v1", 1);
@@ -91,6 +111,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
       const transaction = db.transaction("files", "readwrite");
       transaction.objectStore("files").put({ id: "render-source-file", file: sourceFile });
       transaction.objectStore("files").put({ id: "render-subtitle-file", file: subtitleFile });
+      transaction.objectStore("files").put({ id: "render-audio-file", file: soundtrackFile });
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
     });
@@ -130,10 +151,26 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
       subtitleCueCount: 1,
       versionStatus: "Actual",
       rights: "Confirmado",
+    }, {
+      id: "render-audio-asset",
+      logicalId: "render-audio-logical",
+      seriesId,
+      seriesTitle: "Render Test",
+      episodeId,
+      episodeTitle: "Test Episode",
+      title: "Soundtrack",
+      kind: "Audio",
+      fileId: "render-audio-file",
+      fileName: "score.wav",
+      mimeType: "audio/wav",
+      audioLanguage: "es",
+      versionStatus: "Actual",
+      rights: "Confirmado",
+      durationSeconds: 1.2,
     }]));
     localStorage.setItem("microdrama-edit-timeline-v1:" + episodeId, JSON.stringify({
       scenes: [{ id: "render-scene", title: "Scene", durationSeconds: 1, sourceInSeconds: 0, sourceOutSeconds: 1, videoAssetId: "render-source-asset" }],
-      audioAssetId: "",
+      audioAssetId: "render-audio-asset",
       subtitleAssetId: "render-subtitle-asset",
     }));
   });
