@@ -38,7 +38,7 @@ function parseSubtitleFile(text:string,name:string):Omit<SubtitleReport,"languag
   if(index<0)continue;
   cueCount++;
   const times=lines[index].split("-->");
-  const start=timestamp(times[0]);const end=timestamp(times[1].split(/\s+/)[0]);
+  const start=timestamp(times[0]);const end=timestamp(times[1].trim().split(/\s+/)[0]);
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)errors.push("Cue "+cueCount+": intervalo de tiempo inválido.");
   if(start<previousStart)errors.push("Cue "+cueCount+": los tiempos no están ordenados.");
   if(start>=previousStart)previousStart=start;
