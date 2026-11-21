@@ -9,7 +9,7 @@ type Rights = "Pendiente" | "Confirmado" | "Restringido";
 type EpisodeOption = { id:string; title:string; number:number };
 type SeriesOption = { id:string; title:string; episodes?:EpisodeOption[] };
 type SubtitleReport={format:"SRT"|"VTT";cueCount:number;errors:string[];language:string};
-type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleLanguage?:string;subtitleValidation?:"Válido"|"Con errores";
+type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleLanguage?:string;subtitleValidation?:"Válido"|"Con errores"; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleLanguage?:string;subtitleValidation?:"Válido"|"Con errores";
 
  id:string; logicalId:string; seriesId:string; seriesTitle:string; episodeId?:string; episodeTitle?:string;
  title:string; kind:AssetKind; source:string; url:string; rights:Rights; license:string;
@@ -77,6 +77,8 @@ export default function AssetRegistry(){
  const [saving,setSaving]=useState(false);
  const [preview,setPreview]=useState<{asset:Asset;url:string}|null>(null);
  const [probing,setProbing]=useState(false);
+ const [subtitleReport,setSubtitleReport]=useState<SubtitleReport|null>(null);
+ const [subtitleLanguage,setSubtitleLanguage]=useState("es");
  const [rights,setRights]=useState<Rights>("Pendiente");
  const [license,setLicense]=useState("");
  const [version,setVersion]=useState("v1");
@@ -130,11 +132,11 @@ export default function AssetRegistry(){
    title:title.trim(),kind,source,url:url.trim(),rights,license:license.trim(),version:version.trim()||"v1",
    versionNumber:numericVersion,versionStatus:"Actual",notes:notes.trim(),createdAt:new Date().toISOString(),
    width:asNumber(width),height:asNumber(height),fps:asNumber(fps),durationSeconds:asNumber(duration),codec:codec.trim()||undefined,
-   audioTracks:asNumber(audioTracks),subtitleTracks:asNumber(subtitleTracks),checksum:checksum.trim()||undefined
+   audioTracks:asNumber(audioTracks),subtitleTracks:asNumber(subtitleTracks),...(subtitleReport?{subtitleFormat:subtitleReport.format,subtitleCueCount:subtitleReport.cueCount,subtitleLanguage:subtitleLanguage.trim()||"und",subtitleValidation:subtitleReport.errors.length?"Con errores" as const:"Válido" as const}:{}),checksum:checksum.trim()||undefined
   };
   setAssets(p=>[item,...p]);setTitle("");setUrl("");setSelectedFile(null);setLicense("");setVersion("v1");setNotes("");setSaving(false);
   setWidth("");setHeight("");setFps("");setDuration("");setCodec("");setAudioTracks("");setSubtitleTracks("");setChecksum("");
-  setRights("Pendiente");setEpisodeId("");setNotice("Activo y metadatos técnicos registrados en este navegador.");
+  setRights("Pendiente");setEpisodeId("");setSubtitleReport(null);setSubtitleLanguage("es");setNotice("Activo y metadatos técnicos registrados en este navegador.");
  }
  async function handleFileSelected(file:File|null){
   setSelectedFile(file);
