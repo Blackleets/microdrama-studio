@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, FileImage, FileVideo, FileAudio, FileText, Plus, ShieldCheck, Trash2, ExternalLink, History, Archive, Film } from "lucide-react";
+import { ArrowLeft, Check, FileImage, FileVideo, FileAudio, FileText, Plus, ShieldCheck, Trash2, ExternalLink, History, Archive } from "lucide-react";
 
 type AssetKind = "Vídeo" | "Imagen" | "Audio" | "Documento";
 type Rights = "Pendiente" | "Confirmado" | "Restringido";
@@ -86,7 +86,7 @@ export default function AssetRegistry(){
  function addVersion(asset:Asset){
   const nextNumber=Math.max(0,...assets.filter(a=>a.logicalId===asset.logicalId).map(a=>a.versionNumber))+1;
   const next:Asset={...asset,id:crypto.randomUUID(),version:"v"+nextNumber,versionNumber:nextNumber,versionStatus:"Actual",createdAt:new Date().toISOString(),rights:"Pendiente",notes:"Nueva versión basada en "+asset.version+" · Revisar derechos y QA."};
-  setAssets(p=>p.map(a=>a.logicalId===asset.logicalId?{...a,versionStatus:"Archivada"}:a).concat(next));
+  setAssets(p=>p.map(a=>a.logicalId===asset.logicalId?{...a,versionStatus:"Archivada" as const}:a).concat(next));
   setExpanded(asset.logicalId);setNotice("Nueva versión creada. La versión anterior quedó archivada.");
  }
  function cycleRights(id:string){setAssets(p=>p.map(a=>a.id===id?{...a,rights:a.rights==="Pendiente"?"Confirmado":a.rights==="Confirmado"?"Restringido":"Pendiente"}:a));}
