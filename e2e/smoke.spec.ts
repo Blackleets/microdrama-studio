@@ -6,6 +6,43 @@ test("root route opens the streaming catalog", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /La última/ }).first()).toBeVisible();
 });
 
+test("streaming player navigates between episodes and clamps at both ends", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "player-nav-series",
+      title: "Player Nav Test",
+      logline: "Episode navigation regression",
+      genre: "Drama",
+      status: "Publicado",
+      episodes: [
+        { id: "player-nav-1", title: "First Chapter", status: "Aprobado" },
+        { id: "player-nav-2", title: "Second Chapter", status: "Aprobado" },
+      ],
+    }]));
+    localStorage.setItem("microdrama-assets-v1", "[]");
+  });
+  await page.goto("/streaming");
+  await page.locator(".show-poster").filter({ hasText: "PLAYER NAV TEST" }).click();
+  await page.getByRole("button", { name: /Ver episodio 1/ }).click();
+
+  const position = page.getByTestId("player-episode-position");
+  const previous = page.getByTestId("player-previous-episode");
+  const next = page.getByTestId("player-next-episode");
+  await expect(position).toHaveText("EPISODIO 1 DE 2");
+  await expect(previous).toBeDisabled();
+  await expect(next).toBeEnabled();
+
+  await next.click();
+  await expect(position).toHaveText("EPISODIO 2 DE 2");
+  await expect(previous).toBeEnabled();
+  await expect(next).toBeDisabled();
+
+  await previous.click();
+  await expect(position).toHaveText("EPISODIO 1 DE 2");
+  await expect(previous).toBeDisabled();
+  await expect(next).toBeEnabled();
+});
+
 test("Studio exposes local workspace and production navigation", async ({ page }) => {
   await page.goto("/studio");
   await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
