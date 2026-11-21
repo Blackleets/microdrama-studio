@@ -24,11 +24,11 @@ The local registry supports manually entered:
 - Subtitle-track count
 - SHA-256 checksum
 
-Width, height, and duration are prefilled from browser-readable media metadata when possible. FPS, codec, track counts, and checksum remain operator-entered. The app does not inspect container internals or certify the media. The release gate checks the declared video-master metadata; it does not verify the underlying file.
+Width, height, and duration are prefilled from browser-readable media metadata when possible. FPS, codec, track counts, and checksum remain operator-entered. The app does not inspect container internals or certify the media. SRT and WebVTT subtitle files are parsed locally for cue structure, timestamp format, ordering, non-empty text, and cue count. The language code and validation summary are stored with the asset. This is a structural check only: it does not assess translation quality, readability, synchronization against the video, or burned-in captions. The release gate checks the declared video-master metadata and requires a positive audio-track count; it does not inspect the underlying media container.
 
 ## Release QA behavior
 
-The release gate evaluates only current asset versions linked to a series. For a video master, it requires a locally attached file plus manually declared dimensions, frame rate, duration, codec, and portrait 9:16 aspect ratio. At least one current linked asset must exist, and every such asset must have rights marked `Confirmado`. At least one current video asset must also declare width, height, frame rate, duration, and codec, with a portrait 9:16 aspect ratio (within a small tolerance). Archived versions do not block the current release gate.
+The release gate evaluates only current asset versions linked to a series. Every episode must have a current video master linked to that episode, with a locally attached file, manually declared dimensions, frame rate, duration, codec, a positive audio-track count, and portrait 9:16 aspect ratio. Every episode must also have at least one current locally attached SRT or WebVTT document that passes structural validation and contains at least one cue. Every current asset linked to the series must have rights marked `Confirmado`. Archived versions do not block the current release gate.
 
 Manual checks for story continuity, vertical framing, audio, and subtitles remain operator attestations. A green local gate is not a legal opinion, technical certification, or proof that a remote media URL works.
 
@@ -36,8 +36,8 @@ Manual checks for story continuity, vertical framing, audio, and subtitles remai
 
 - Data is stored in the current browser's localStorage and is not synchronized.
 - Local IndexedDB storage is browser/device-specific and subject to browser quota, eviction, and private-mode limitations. It is not a backup or durable cloud store.
-- No server upload, CDN delivery, transcoding, codec/FPS/track probing, waveform, subtitle parsing, or checksum generation.
-- No automatic media probing, transcoding, waveform, subtitle parsing, or checksum generation.
+- No server upload, CDN delivery, transcoding, codec/FPS/audio-track probing, waveform, subtitle timing alignment, subtitle rendering QA, or checksum generation.
+- No automatic codec/FPS/audio-track probing, transcoding, waveform, subtitle timing alignment, subtitle rendering QA, or checksum generation.
 - No immutable audit log; browser storage can be edited or cleared.
 - Do not use the local catalog as a public distribution or paid streaming service.
 
