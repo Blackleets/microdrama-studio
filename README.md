@@ -6,7 +6,7 @@ AI-assisted production workspace for vertical micro-series, paired with a mobile
 
 - **Streaming App** at `/` and `/streaming`: discovery catalog, featured series, genre filters, search, saved list, series detail and vertical 9:16 player shell.
 - **Private Studio** at `/studio`: command center, story bible, character studio, script room, storyboard, AI production preparation, editorial approval, distribution and revenue planning.
-- **Media Asset Registry** at `/studio/assets`: versioned production assets, episode linkage, browser-local file import/preview through IndexedDB, and manually maintained master metadata.
+- **Media Asset Registry** at `/studio/assets`: versioned production assets, episode linkage, browser-local file import/preview through IndexedDB, subtitle validation, language metadata and SHA-256 for supported file sizes.\n- **Post-production editor** at `/studio/post-production`: episode EDL with ordered scenes, duration planning, real local video/audio previews, audio/subtitle asset assignment and named edit snapshots.
 - **Local publishing bridge**: a series created in Studio can enter the local streaming catalog only after every episode has editorial status `Aprobado` and the owner publishes its catalog entry.
 - **Hybrid production**: live-action AI and animated-universe adapters are planned, with owner approval required before release.
 - **Business model**: free episodes, premium unlocks and subscriptions are designed; payment processing is not connected.
@@ -20,7 +20,7 @@ The product runs in **local-first mode** so development can continue before the 
 - Streaming watchlist is saved in browser localStorage.
 - Published Studio series are read from the same browser's local Studio data and shown in the streaming catalog after editorial approval.
 - The streaming player is a UI shell. It clearly marks video as not connected; it does not pretend to play media.
-- Script structure preparation is an editable local template, not an AI-generated provider result.
+- Post-production edits are local EDL data: the editor previews original files but does not trim, mix, transcode or render a finished episode.\n- Script structure preparation remains available locally; external AI generation requires a configured and verified provider key/model.
 - Local data is specific to the current browser/device. It is not backed up or synchronized across devices.
 
 ## Stack
@@ -38,4 +38,4 @@ Supabase is not required for the current local-first workspace. The database mig
 
 ## Not yet implemented
 
-Actual audiovisual generation, streaming playback and CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, checksum generation, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local asset preview is available only inside the Studio browser that imported the file.
+Actual audiovisual generation, rendered episode export, streaming playback and CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, large-file checksum verification, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local asset preview is available only inside the Studio browser that imported the file.
