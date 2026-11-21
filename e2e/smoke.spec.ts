@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("root route opens the streaming catalog", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/streaming\/?$/);
-  await expect(page.getByRole("heading", { name: /La última/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /La última/ }).first()).toBeVisible();
 });
 
 test("Studio exposes local workspace and production navigation", async ({ page }) => {
