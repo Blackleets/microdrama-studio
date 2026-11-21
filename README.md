@@ -47,6 +47,10 @@ See [the secure local Gemini setup guide](docs/LOCAL_GEMINI_SETUP.md).
 
 See [the production launch checklist](docs/GO_LIVE_CHECKLIST.md) for the implemented local capabilities and the explicit blockers before public launch.
 
+## Contributor / AI agent handoff
+
+Before contributing, read [AGENTS.md](AGENTS.md), the [AI handoff](docs/AI_HANDOFF.md) and the [prioritized roadmap](docs/ROADMAP.md). These documents define the active branch, safety constraints, current implementation state and next tasks. Contributions must preserve local-first data and must not push to `main` or merge the open draft PR without owner approval.
+
 ## Stack
 
 Next.js 16, React 19.2, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
