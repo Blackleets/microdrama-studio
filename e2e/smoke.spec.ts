@@ -145,7 +145,6 @@ test("continue watching opens the saved episode and restores its playback positi
   await expect(player).toHaveAttribute("data-mock-current-time", "10");
   await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 2 DE 3");
 
-  await page.clock.install();
   await player.evaluate(video => video.dispatchEvent(new Event("ended")));
   const countdown = page.getByTestId("player-auto-next-countdown");
   await expect(countdown).toBeVisible();
@@ -155,8 +154,7 @@ test("continue watching opens the saved episode and restores its playback positi
 
   await player.evaluate(video => video.dispatchEvent(new Event("ended")));
   await expect(countdown).toBeVisible();
-  await page.clock.fastForward(8_000);
-  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 3 DE 3");
+  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 3 DE 3", { timeout: 12_000 });
   await expect(player).toHaveAttribute("src", /^blob:/);
   await expect(countdown).toBeHidden();
 
