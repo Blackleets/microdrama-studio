@@ -104,7 +104,7 @@ export default function AssetRegistry(){
  const [expanded,setExpanded]=useState<string|null>(null);
  function invalidateSeriesRelease(targetSeriesId:string){try{localStorage.setItem("microdrama-release-qa-v1:"+targetSeriesId,JSON.stringify([false,false,false]));}catch{setNotice("No se pudieron reiniciar las marcas de QA local.");}try{const stored=JSON.parse(localStorage.getItem("microdrama-studio-local-v1")||"[]") as Array<{id:string;status?:string}>;localStorage.setItem("microdrama-studio-local-v1",JSON.stringify(stored.map(item=>item.id===targetSeriesId&&item.status==="Publicado"?{...item,status:"Desarrollo"}:item)));}catch{setNotice("No se pudo retirar la ficha del catálogo local; revisa el almacenamiento del navegador.");}}
 
- // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate asset metadata and series options from browser storage.
+ /* eslint-disable react-hooks/set-state-in-effect -- hydrate asset metadata and series options from browser storage. */
  useEffect(()=>{
   try{
    const raw=JSON.parse(localStorage.getItem(KEY)||"[]") as Partial<Asset>[];
@@ -114,6 +114,7 @@ export default function AssetRegistry(){
   }catch{setAssets([]);setSeries([])}
   setReady(true);
  },[]);
+ /* eslint-enable react-hooks/set-state-in-effect */
  useEffect(()=>{if(ready)localStorage.setItem(KEY,JSON.stringify(assets))},[assets,ready]);
  const selectedSeries=series.find(s=>s.id===seriesId);
  const episodes=selectedSeries?.episodes||[];
