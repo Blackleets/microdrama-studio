@@ -25,6 +25,6 @@
 - [ ] Implement a real media render pipeline, immutable rendered outputs and automated playback/output-integrity tests.
 - [ ] Configure public streaming/CDN delivery only after signed access and takedown controls are in place.
 - [x] Run dependency audit and remediate reported vulnerabilities (current CI audit: no reported vulnerabilities).
-- [ ] Run typecheck, lint, production build and end-to-end tests before launch.
+- [x] Run ESLint and production build in GitHub Actions; Next.js build performs TypeScript validation.\n- [ ] Add and run end-to-end browser tests before public launch.
 
 The local-first workflow is usable for same-browser production planning and local playback. It is not a production-ready public service. Do not deploy with real users or payments until the remaining checklist is completed.
