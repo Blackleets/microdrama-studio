@@ -29,7 +29,11 @@ The product runs in **local-first mode** so development can continue before the 
 
 See [the local-first production workflow](docs/LOCAL_FIRST_WORKFLOW.md) for the full path from series creation and asset import through QA, local publishing and browser playback.
 
-## Optional Gemini setup\n\nSee [the secure local Gemini setup guide](docs/LOCAL_GEMINI_SETUP.md).\n\n## Stack
+## Optional Gemini setup
+
+See [the secure local Gemini setup guide](docs/LOCAL_GEMINI_SETUP.md).
+
+## Stack
 
 Next.js 15, React 19, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
 
