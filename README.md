@@ -8,7 +8,7 @@ AI-assisted production workspace for vertical micro-series, paired with a mobile
 - **Local-first Studio** at `/studio`: command center, story bible, character studio, script room, storyboard, AI production preparation, editorial approval, distribution and revenue planning.
 - **Media Asset Registry** at `/studio/assets`: versioned production assets, episode linkage, browser-local file import/preview through IndexedDB, subtitle validation, language metadata and SHA-256 for supported file sizes.
 - **Post-production editor** at `/studio/post-production`: episode EDL with ordered scenes, source in/out points, cumulative timecodes, local video/audio previews, audio/subtitle assignment, named snapshots and JSON export.
-- **Local publishing bridge**: a series created in Studio can enter the local streaming catalog only after every episode has editorial status `Aprobado` and the owner publishes its catalog entry.
+- **Local publishing bridge**: a series created in Studio can enter the local streaming catalog only after every episode has editorial status `Aprobado`, the release QA gate passes, and the owner publishes its catalog entry.
 - **Hybrid production**: live-action AI and animated-universe adapters are planned, with owner approval required before release.
 - **Business model**: free episodes, premium unlocks and subscriptions are designed; payment processing is not connected.
 
