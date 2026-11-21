@@ -35,7 +35,7 @@ See [the secure local Gemini setup guide](docs/LOCAL_GEMINI_SETUP.md).
 
 ## Stack
 
-Next.js 15, React 19, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
+Next.js 16, React 19.2, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
 
 ## Local setup
 
