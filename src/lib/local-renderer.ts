@@ -116,6 +116,14 @@ function drawCaption(ctx: CanvasRenderingContext2D, text: string, width: number,
 
 export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<LocalRenderResult> {
   if (!options.scenes.length) throw new Error("Añade al menos una escena al montaje.");
+  for (const [index, scene] of options.scenes.entries()) {
+    if (!Number.isFinite(scene.sourceInSeconds) || !Number.isFinite(scene.sourceOutSeconds) || scene.sourceInSeconds < 0 || scene.sourceOutSeconds <= scene.sourceInSeconds) {
+      throw new Error("La escena " + (index + 1) + " tiene un rango de origen inválido.");
+    }
+    if (!(scene.file instanceof File) || !scene.file.type.startsWith("video/")) {
+      throw new Error("La escena " + (index + 1) + " no contiene un archivo de vídeo válido.");
+    }
+  }
   if (typeof MediaRecorder === "undefined") throw new Error("Este navegador no admite grabación local WebM.");
   if (!window.AudioContext) throw new Error("Este navegador no admite mezcla de audio local.");
 
@@ -213,8 +221,8 @@ export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<Lo
           drawVideo(context, video, width, height);
           const clipElapsed = Math.max(0, Math.min(end - start, video.currentTime - start));
           const timelineTime = elapsed + clipElapsed;
-          const cue = captionCues.find(item => timelineTime >= item.start && timelineTime < item.end);
-          if (cue) drawCaption(context, cue.text, width, height);
+          const activeCaptions = captionCues.filter(item => timelineTime >= item.start && timelineTime < item.end);
+          if (activeCaptions.length) drawCaption(context, activeCaptions.map(item => item.text).join(" · "), width, height);
           const percent = Math.min(99, Math.round(((elapsed + clipElapsed) / totalDuration) * 100));
           if (percent !== lastProgress) { lastProgress = percent; options.onProgress?.(percent); }
           if (video.currentTime >= end - 0.025 || video.ended) {
