@@ -95,12 +95,12 @@ export async function POST(request: Request) {
     "Termina con un cliffhanger visual o emocional."
   ].join("\n");
 
+  const model = bounded(process.env.GEMINI_MODEL, 100);
+  if (!model) return NextResponse.json({ error: "model_not_configured", message: "Configura GEMINI_MODEL con un modelo habilitado en tu cuenta de Google AI." }, { status: 503 });
+
   const current = windows.get(providedToken);
   if (!current || now - current.startedAt >= 24 * 60 * 60 * 1000) windows.set(providedToken, { startedAt: now, count: 1 });
   else windows.set(providedToken, { ...current, count: current.count + 1 });
-
-  const model = bounded(process.env.GEMINI_MODEL, 100);
-  if (!model) return NextResponse.json({ error: "model_not_configured", message: "Configura GEMINI_MODEL con un modelo habilitado en tu cuenta de Google AI." }, { status: 503 });
   let response: Response;
   try {
     response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
