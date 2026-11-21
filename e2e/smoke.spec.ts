@@ -28,7 +28,7 @@ test("Studio tolerates legacy series records without optional genre metadata", a
   });
   await page.reload();
   await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
-  await expect(page.getByText("Legacy Series")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Legacy Series" })).toBeVisible();
   await expect(page.getByText("SIN GÉNERO")).toBeVisible();
 });
 
