@@ -193,4 +193,23 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   expect(renderedMaster.height).toBe(1280);
   expect(renderedMaster.subtitleBurnedIn).toBe(true);
   expect(renderedMaster.audioTracks).toBe(1);
+
+  await page.evaluate(() => {
+    const assets = JSON.parse(localStorage.getItem("microdrama-assets-v1") || "[]");
+    const master = assets.find((asset: { seriesId?: string; assetRole?: string }) => asset.seriesId === "render-series" && asset.assetRole === "Máster de episodio");
+    if (master) master.rights = "Confirmado";
+    localStorage.setItem("microdrama-assets-v1", JSON.stringify(assets));
+    const series = JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]");
+    const published = series.map((item: { id: string; status?: string; episodes: Array<{ status?: string }> }) => item.id === "render-series" ? { ...item, status: "Publicado", episodes: item.episodes.map(episode => ({ ...episode, status: "Aprobado" })) } : item);
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify(published));
+    localStorage.setItem("microdrama-release-qa-v1:render-series", JSON.stringify([true, true, true]));
+  });
+
+  await page.goto("/streaming");
+  await expect(page.getByRole("button", { name: /RENDER TEST/ })).toBeVisible();
+  await page.getByRole("button", { name: /RENDER TEST/ }).click();
+  await page.getByRole("button", { name: /Ver episodio 1/ }).click();
+  const localPlayer = page.locator(".vertical-player video");
+  await expect(localPlayer).toBeVisible();
+  await expect(localPlayer).toHaveAttribute("src", /^blob:/);
 });
