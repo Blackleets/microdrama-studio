@@ -19,7 +19,7 @@ The product runs in **local-first mode** so development can continue before the 
 - Asset metadata is saved in localStorage; imported media files are stored in IndexedDB in the current browser profile. Every episode must have its own current vertical video master with an audio track, plus a locally attached SRT/WebVTT subtitle file that passes structural validation, to pass the local release gate. Basic dimensions/duration are read from browser media metadata when available.
 - Streaming watchlist is saved in browser localStorage.
 - Published Studio series are read from the same browser's local Studio data and shown in the streaming catalog after editorial approval.
-- The streaming player is a UI shell. It clearly marks video as not connected; it does not pretend to play media.
+- The streaming player can play approved episode masters stored in this browser profile via IndexedDB. Catalog-only/demo titles without a local master are clearly marked as unavailable. This is local playback, not public CDN delivery.
 - Post-production edits are local EDL data: the editor previews original files but does not trim, mix, transcode or render a finished episode.\n- Script structure preparation remains available locally; external AI generation requires a configured and verified provider key/model.
 - Local data is specific to the current browser/device. It is not backed up or synchronized across devices.
 
@@ -38,4 +38,4 @@ Supabase is not required for the current local-first workspace. The database mig
 
 ## Not yet implemented
 
-Actual audiovisual generation, rendered episode export, streaming playback and CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, large-file checksum verification, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local asset preview is available only inside the Studio browser that imported the file.
+Actual audiovisual generation, rendered episode export, public streaming/CDN delivery, cloud asset storage, automatic codec/FPS/track inspection, large-file checksum verification, production authentication, cross-device persistence, payments, wallet ledger, live analytics, subscriptions and release automation. Local asset preview is available only inside the Studio browser that imported the file.
