@@ -7,7 +7,7 @@ import { renderEpisodeWebm } from "@/lib/local-renderer";
 
 type Episode={id:string;title:string;number:number;scenes:string[]};
 type Series={id:string;title:string;episodes:Episode[]};
-type Asset={id:string;logicalId?:string;seriesId:string;seriesTitle?:string;episodeId?:string;episodeTitle?:string;title:string;kind:string;assetRole?:string;fileId?:string;fileName?:string;fileSize?:number;mimeType?:string;source?:string;url?:string;rights?:string;license?:string;version?:string;versionNumber?:number;versionStatus?:string;notes?:string;createdAt?:string;checksum?:string;width?:number;height?:number;fps?:number;codec?:string;audioTracks?:number;subtitleFormat?:string;subtitleDurationSeconds?:number;audioLanguage?:string;subtitleLanguage?:string;subtitleValidation?:string;subtitleCueCount?:number;durationSeconds?:number};
+type Asset={id:string;logicalId?:string;seriesId:string;seriesTitle?:string;episodeId?:string;episodeTitle?:string;title:string;kind:string;assetRole?:string;fileId?:string;fileName?:string;fileSize?:number;mimeType?:string;source?:string;url?:string;rights?:string;license?:string;version?:string;versionNumber?:number;versionStatus?:string;notes?:string;createdAt?:string;checksum?:string;width?:number;height?:number;fps?:number;codec?:string;audioTracks?:number;subtitleFormat?:string;subtitleDurationSeconds?:number;audioLanguage?:string;subtitleLanguage?:string;subtitleValidation?:string;subtitleCueCount?:number;subtitleBurnedIn?:boolean;durationSeconds?:number};
 type Scene={id:string;title:string;durationSeconds:number;sourceInSeconds:number;sourceOutSeconds:number;videoAssetId:string};
 type Edit={scenes:Scene[];audioAssetId:string;subtitleAssetId:string};
 type Snapshot={id:string;name:string;createdAt:string;edit:Edit};
@@ -31,7 +31,7 @@ export default function PostProductionPage(){
  const [previewAssetId,setPreviewAssetId]=useState("");
  const [previewUrl,setPreviewUrl]=useState("");
  const [previewError,setPreviewError]=useState("");
- const [rendering,setRendering]=useState(false),[renderProgress,setRenderProgress]=useState(0);
+ const [rendering,setRendering]=useState(false),[renderProgress,setRenderProgress]=useState(0),[burnSubtitles,setBurnSubtitles]=useState(false);
  const [renderUrl,setRenderUrl]=useState(""),[renderFileName,setRenderFileName]=useState(""),[renderError,setRenderError]=useState("");
  useEffect(()=>()=>{if(renderUrl)URL.revokeObjectURL(renderUrl);},[renderUrl]);
  useEffect(()=>{try{const ss=JSON.parse(localStorage.getItem(SERIES_KEY)||"[]") as Series[];const aa=JSON.parse(localStorage.getItem(ASSETS_KEY)||"[]") as Asset[];setSeries(ss);setAssets(aa.filter(a=>a.versionStatus!=="Archivada"));const first=ss.find(s=>s.episodes?.length);if(first){setSeriesId(first.id);setEpisodeId(first.episodes[0].id);}}catch{setNotice("No se pudieron leer los datos locales.");}setReady(true);},[]);
