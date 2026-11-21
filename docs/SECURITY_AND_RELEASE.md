@@ -1,15 +1,27 @@
 # Security and release checklist
 
+## Verified local-first capabilities
+
+- [x] Browser-local Studio for series, story bibles, characters, episodes, scripts and storyboard notes.
+- [x] Browser-local media registry with IndexedDB files, asset versions, rights metadata and subtitle structure checks.
+- [x] Episode EDL editor with source in/out points, asset previews, snapshots and JSON export.
+- [x] Same-browser playback of approved local episode masters with validated subtitle tracks.
+- [x] Local release QA gate and explicit owner publication to the browser-local catalog.
+- [x] Optional Gemini script-generation endpoint guarded by a separate server-side token; this is not a substitute for production owner authentication.
+- [x] JSON backup of local Studio metadata and edit plans; media blobs are not included.
+
+## Required before public production
+
 - [ ] Configure Supabase Auth and restrict Studio routes to authorized owners.
 - [ ] Apply SQL migrations and verify RLS using separate owner and non-owner accounts.
 - [ ] Keep service-role keys and AI provider keys server-side only.
 - [ ] Create private Storage buckets; issue short-lived signed URLs for private assets.
-- [ ] Add server-side authorization to every mutation and generation endpoint.
+- [ ] Add server-side owner authorization to every mutation and generation endpoint; replace the shared local AI token with per-owner authorization and persistent rate limiting.
 - [ ] Make payment webhooks signature-verified and idempotent.
 - [ ] Use a transactional server-side ledger for wallet credit/debit.
 - [ ] Prevent episode publication without a valid owner approval.
 - [ ] Add moderation, rights, privacy and content takedown workflows.
-- [ ] Configure backups, monitoring, error reporting and rate limits.
+- [ ] Configure durable media backups, monitoring, error reporting and persistent rate limits.\n- [ ] Implement a real media render pipeline, immutable rendered outputs and automated playback/output-integrity tests.\n- [ ] Configure public streaming/CDN delivery only after signed access and takedown controls are in place.
 - [ ] Run typecheck, lint, production build and end-to-end tests before launch.
 
-The current commit is a foundation, not a production-ready service. Do not deploy with real users or payments until the checklist is completed.
+The local-first workflow is usable for same-browser production planning and local playback. It is not a production-ready public service. Do not deploy with real users or payments until the remaining checklist is completed.
