@@ -42,7 +42,7 @@ function parseSubtitleFile(text:string,name:string):Omit<SubtitleReport,"languag
   if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)errors.push("Cue "+cueCount+": intervalo de tiempo inválido.");
   if(start<previousStart)errors.push("Cue "+cueCount+": los tiempos no están ordenados.");
   if(start>=previousStart)previousStart=start;
-  if(start<previousEnd)errors.push("Cue "+cueCount+": se solapa con el cue anterior.");
+  // Overlapping subtitle cues are valid in SRT/WebVTT; only start-time ordering is enforced.
   if(end>previousEnd)previousEnd=end;
   if(Number.isFinite(end))maxEnd=Math.max(maxEnd,end);
   if(!lines.slice(index+1).join(" ").trim())errors.push("Cue "+cueCount+": texto vacío.");
@@ -170,7 +170,17 @@ export default function AssetRegistry(){
   setAssets(p=>p.map(a=>a.logicalId===asset.logicalId?{...a,versionStatus:"Archivada" as const}:a).concat(next));invalidateSeriesRelease(asset.seriesId);
   setExpanded(asset.logicalId);setNotice("Nueva versión creada. La versión anterior quedó archivada.");
  }
- function cycleRights(id:string){const asset=assets.find(a=>a.id===id);setAssets(p=>p.map(a=>a.id===id?{...a,rights:a.rights==="Pendiente"?"Confirmado":a.rights==="Confirmado"?"Restringido":"Pendiente"}:a));if(asset?.versionStatus==="Actual")invalidateSeriesRelease(asset.seriesId);}
+ function cycleRights(id:string){
+  const asset=assets.find(a=>a.id===id);if(!asset)return;
+  const next:Rights=asset.rights==="Pendiente"?"Confirmado":asset.rights==="Confirmado"?"Restringido":"Pendiente";
+  if(next==="Confirmado"){
+   if(asset.license.trim().length<4){setNotice("No se pueden confirmar derechos sin identificar la licencia o titularidad del activo.");return;}
+   if(!confirm("Confirmas que has verificado la licencia, titularidad y permisos comerciales de este archivo concreto ("+asset.title+" · "+asset.version+") y que conservas la documentación justificativa?"))return;
+  }
+  setAssets(p=>p.map(a=>a.id===id?{...a,rights:next}:a));
+  if(asset.versionStatus==="Actual")invalidateSeriesRelease(asset.seriesId);
+  setNotice(next==="Confirmado"?"Declaración de derechos confirmada por el operador. Conserva la documentación legal original.":"Estado de derechos actualizado a "+next+".");
+ }
  function restoreVersion(asset:Asset){if(!confirm("¿Restaurar "+asset.version+" como versión actual? Se volverán a revisar sus derechos."))return;setAssets(p=>p.map(a=>a.logicalId===asset.logicalId?{...a,versionStatus:a.id===asset.id?"Actual" as const:"Archivada" as const,rights:a.id===asset.id?"Pendiente" as Rights:a.rights}:a));invalidateSeriesRelease(asset.seriesId);setNotice("Versión restaurada. Debes volver a confirmar derechos y QA.");}
  function deleteAsset(asset:Asset){if(confirm("¿Eliminar esta versión del registro y su archivo local?")){setAssets(p=>p.filter(a=>a.id!==asset.id));if(asset.versionStatus==="Actual")invalidateSeriesRelease(asset.seriesId);if(asset.fileId)void removeMediaFile(asset.fileId);}}
  async function openPreview(asset:Asset){if(!asset.fileId){setNotice("Este activo no tiene un archivo cargado.");return;}try{const file=await getMediaFile(asset.fileId);if(!file){setNotice("No se encontró el archivo en el almacenamiento local.");return;}if(preview)URL.revokeObjectURL(preview.url);setPreviewText(asset.kind==="Documento"&&/\.(srt|vtt)$/i.test(file.name)?await file.text():null);setPreview({asset,url:URL.createObjectURL(file)});}catch{setNotice("No se pudo abrir el archivo local.");}}
