@@ -25,12 +25,13 @@ Files are stored in IndexedDB and metadata in localStorage. Keep the browser pro
 ## 3. Plan and review the edit
 
 1. Open `/studio/post-production`.
-2. Select the episode, order its scenes, assign the imported video master to each scene, and set source in/out points for the clip segment.
-3. Set planned scene durations and assign the audio and validated subtitle assets.
-4. Preview the original video/audio files from the local browser store.
-5. Save named edit snapshots and export the EDL JSON for backup or later processing.
+2. Select the episode, order its scenes, assign imported masters or scene clips, and set source in/out points for each segment.
+3. Assign an optional soundtrack and a validated subtitle file. Choose whether captions should be burned into the image or remain a sidecar track.
+4. Preview the original files, save named edit snapshots and export the EDL JSON.
+5. Select **Renderizar máster WebM**. The browser assembles the clips with hard cuts at 720×1280 and 30 fps, mixes clip audio with the optional soundtrack, and optionally burns in captions.
+6. The resulting WebM is saved as a new Máster de episodio in Asset Registry with rights set to Pendiente. Download it if needed, confirm rights, then rerun QA before publication.
 
-The EDL is an edit decision list, not a rendered video. It does not trim clips, mix audio, burn captions or export MP4.
+The EDL remains an edit decision list. The local renderer creates a real WebM file, but it does not export MP4, apply transitions or use a server-side transcoding pipeline.
 
 ## 4. Approve and pass release QA
 
@@ -46,7 +47,7 @@ The local gate checks attached current files, declared metadata, 9:16 dimensions
 
 1. Open `/streaming` in the same browser profile.
 2. Open the published series and select an episode.
-3. Play the attached local master. If a valid local subtitle file is linked, the player exposes it as a captions track.
+3. Play the attached local WebM master. If captions were not burned into the master, a valid linked subtitle file is exposed as a captions track.
 
 This is browser-local playback. It is not a public stream, does not use a CDN and is not accessible from another device or browser profile.
 
