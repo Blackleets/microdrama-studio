@@ -20,3 +20,12 @@ test("asset registry and post-production routes render", async ({ page }) => {
   await page.goto("/studio/post-production");
   await expect(page.getByText("Selecciona un episodio")).toBeVisible();
 });
+
+test("Gemini endpoint stays disabled without a server access token", async ({ request }) => {
+  const response = await request.post("/api/local/story", {
+    data: { series: { title: "Prueba" }, episode: { title: "Episodio" } },
+  });
+  expect(response.status()).toBe(503);
+  const body = await response.json();
+  expect(body.error).toBe("token_not_configured");
+});
