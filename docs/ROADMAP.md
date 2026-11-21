@@ -2,6 +2,13 @@
 
 This roadmap distinguishes the current local-first prototype from the work required for a commercial service. Priority is ordered by risk and user value, not by visual novelty.
 
+## Active GitHub task tickets
+
+- [#2 — E2E coverage for streaming and local publishing](https://github.com/Blackleets/microdrama-studio/issues/2)
+- [#3 — Harden local player lifecycle and media errors](https://github.com/Blackleets/microdrama-studio/issues/3)
+- [#4 — Versioned continue-watching progress](https://github.com/Blackleets/microdrama-studio/issues/4)
+- [#5 — Mobile accessibility and responsive dialogs](https://github.com/Blackleets/microdrama-studio/issues/5)
+
 ## P0 — Stabilize the current local product
 
 - [ ] Run and verify GitHub Actions on the current feature branch head; resolve genuine lint/build/E2E failures without weakening checks.
