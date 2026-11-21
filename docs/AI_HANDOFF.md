@@ -5,9 +5,9 @@ Repository: `Blackleets/microdrama-studio`
 Active working branch: `feat/streaming-cinematic-motion`  
 Base branch: `main` (do not push directly)  
 Open draft PR: https://github.com/Blackleets/microdrama-studio/pull/1  
-Latest known branch commit: `8071d8c66ad8d0a82235762053c24e664e765911`  
-Latest known preview: https://microdrama-studio-8h29q26y8-nfyns-projects-b0cc0f41.vercel.app  
-Preview state when this handoff was written: **READY**. GitHub Actions CI for this head was **in progress** at handoff refresh; check the PR checks for its final result. (Vercel deployment `dpl_3SeyLjQbFdScp14hoc9Sznb8h9DA`).
+Latest branch head at handoff refresh: `f0e780d2134c1b301f33788769c280af3570afa4`  
+Latest verified preview (previous head `b0a0d8c3ed43b8551ecd6463a786fc5af502af97`): https://microdrama-studio-xgul3ctnn-nfyns-projects-b0cc0f41.vercel.app (**READY**). A new preview should be generated for the current head; verify its commit SHA and READY state before sharing it.  
+CI for previous head `b0a0d8c3ed43b8551ecd6463a786fc5af502af97`: lint and build passed; browser smoke tests failed (9 passed, 4 failed). The failure causes were corrected in `f0e780d2134c1b301f33788769c280af3570afa4`; verify CI for this new head before treating it as green.
 
 ## Mission
 
@@ -43,7 +43,7 @@ The product should feel like a premium streaming startup, not a generic admin da
 - Studio includes asset registry, episode EDL, local WebM render path, editorial review and local publishing gate.
 - Studio backup export/restore covers supported metadata and edit plans, but **does not include IndexedDB media blobs**.
 - Current catalog's built-in four series are explicitly demo/catalog-demo content, not licensed commercial shows.
-- Latest preview is READY, but this does not replace local lint/build/E2E verification. Check GitHub Actions for the latest head commit.
+- The last verified preview is READY for the previous head, not necessarily the current branch head. Check the exact commit SHA on every new preview. CI must pass on the current head; Vercel READY alone does not replace lint/build/E2E verification.
 
 ## Hard constraints — do not violate
 
