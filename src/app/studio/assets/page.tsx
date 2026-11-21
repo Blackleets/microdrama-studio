@@ -161,7 +161,7 @@ export default function AssetRegistry(){
  }
  function addVersion(asset:Asset){
   const nextNumber=Math.max(0,...assets.filter(a=>a.logicalId===asset.logicalId).map(a=>a.versionNumber))+1;
-  const next:Asset={...asset,id:crypto.randomUUID(),version:"v"+nextNumber,versionNumber:nextNumber,versionStatus:"Actual",createdAt:new Date().toISOString(),rights:"Pendiente",fileId:undefined,fileName:undefined,fileSize:undefined,mimeType:undefined,url:"",notes:"Nueva versión basada en "+asset.version+" · Adjuntar el nuevo máster y revisar derechos."};
+  const next:Asset={...asset,id:crypto.randomUUID(),version:"v"+nextNumber,versionNumber:nextNumber,versionStatus:"Actual",createdAt:new Date().toISOString(),rights:"Pendiente",fileId:undefined,fileName:undefined,fileSize:undefined,mimeType:undefined,url:"",width:undefined,height:undefined,fps:undefined,durationSeconds:undefined,codec:undefined,audioTracks:undefined,subtitleTracks:undefined,checksum:undefined,subtitleFormat:undefined,subtitleCueCount:undefined,subtitleDurationSeconds:undefined,subtitleLanguage:undefined,subtitleValidation:undefined,notes:"Nueva versión basada en "+asset.version+" · Adjuntar el nuevo máster, volver a declarar metadatos y revisar derechos."};
   setAssets(p=>p.map(a=>a.logicalId===asset.logicalId?{...a,versionStatus:"Archivada" as const}:a).concat(next));
   setExpanded(asset.logicalId);setNotice("Nueva versión creada. La versión anterior quedó archivada.");
  }
