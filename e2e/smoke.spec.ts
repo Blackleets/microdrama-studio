@@ -406,3 +406,66 @@ test("malformed local backup metadata is rejected without modifying workspace", 
   const current = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]"));
   expect(current[0].id).toBe("safe-series");
 });
+
+
+test("exported local backup can be imported as a round trip", async ({ page }) => {
+  await page.goto("/studio");
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "roundtrip-series",
+      title: "Round Trip Series",
+      logline: "A real export/import check",
+      genre: "Drama",
+      style: "Vertical",
+      status: "Desarrollo",
+      updatedAt: new Date().toISOString(),
+      characters: [],
+      episodes: [{
+        id: "roundtrip-episode",
+        title: "Episode One",
+        number: 1,
+        status: "Borrador",
+        duration: 90,
+        script: "Round trip script",
+        scenes: ["Opening shot"],
+      }],
+      bible: "Round trip bible",
+    }]));
+    localStorage.setItem("microdrama-watchlist-v1", JSON.stringify(["roundtrip-series"]));
+  });
+  await page.reload();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Exportar copia de seguridad" }).click(),
+  ]);
+  const stream = await download.createReadStream();
+  if (!stream) throw new Error("Backup download stream unavailable");
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  const backupBuffer = Buffer.concat(chunks);
+  const exported = JSON.parse(backupBuffer.toString("utf8"));
+  expect(exported.format).toBe("microdrama-local-backup");
+  expect(exported.schemaVersion).toBe(1);
+  expect(exported.series[0].id).toBe("roundtrip-series");
+
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "temporary-series",
+      title: "Temporary Series",
+      episodes: [],
+      characters: [],
+      status: "Desarrollo",
+    }]));
+  });
+  await page.reload();
+  page.once("dialog", dialog => dialog.accept());
+  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+    name: "roundtrip-backup.json",
+    mimeType: "application/json",
+    buffer: backupBuffer,
+  });
+  await expect(page.getByText(/Copia restaurada/)).toBeVisible();
+  const restored = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]"));
+  expect(restored[0].id).toBe("roundtrip-series");
+  expect(restored[0].episodes[0].scenes).toEqual(["Opening shot"]);
+});
