@@ -25,7 +25,7 @@ Files are stored in IndexedDB and metadata in localStorage. Keep the browser pro
 ## 3. Plan and review the edit
 
 1. Open `/studio/post-production`.
-2. Select the episode, order its scenes and assign the imported video master to each scene.
+2. Select the episode, order its scenes, assign the imported video master to each scene, and set source in/out points for the clip segment.
 3. Set planned scene durations and assign the audio and validated subtitle assets.
 4. Preview the original video/audio files from the local browser store.
 5. Save named edit snapshots and export the EDL JSON for backup or later processing.
