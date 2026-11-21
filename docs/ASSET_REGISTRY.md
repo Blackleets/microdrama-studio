@@ -24,7 +24,7 @@ The local registry supports manually entered:
 - Subtitle-track count
 - SHA-256 checksum
 
-These fields are declarations entered by the operator. The app does not yet probe media containers, extract codec/track metadata, or calculate checksums. The release gate checks the declared video-master metadata; it does not verify the underlying file.
+Width, height, and duration are prefilled from browser-readable media metadata when possible. FPS, codec, track counts, and checksum remain operator-entered. The app does not inspect container internals or certify the media. The release gate checks the declared video-master metadata; it does not verify the underlying file.
 
 ## Release QA behavior
 
@@ -36,7 +36,7 @@ Manual checks for story continuity, vertical framing, audio, and subtitles remai
 
 - Data is stored in the current browser's localStorage and is not synchronized.
 - Local IndexedDB storage is browser/device-specific and subject to browser quota, eviction, and private-mode limitations. It is not a backup or durable cloud store.
-- No server upload, CDN delivery, transcoding, automatic media probing, waveform, subtitle parsing, or checksum generation.
+- No server upload, CDN delivery, transcoding, codec/FPS/track probing, waveform, subtitle parsing, or checksum generation.
 - No automatic media probing, transcoding, waveform, subtitle parsing, or checksum generation.
 - No immutable audit log; browser storage can be edited or cleared.
 - Do not use the local catalog as a public distribution or paid streaming service.
