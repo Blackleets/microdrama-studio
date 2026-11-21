@@ -192,4 +192,5 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   expect(renderedMaster.width).toBe(720);
   expect(renderedMaster.height).toBe(1280);
   expect(renderedMaster.subtitleBurnedIn).toBe(true);
+  expect(renderedMaster.audioTracks).toBe(1);
 });
