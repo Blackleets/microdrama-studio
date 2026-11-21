@@ -11,7 +11,7 @@ The Asset Registry is a browser-local production inventory. Media files can be i
 
 ## Series and episode linkage
 
-An asset can be linked to a series and optionally to one episode. Video assets have an explicit role: `Máster de episodio`, `Clip de escena`, `Tráiler`, or `Referencia`. The streaming catalog selects only current episode masters. The release gate validates episode masters only; scene clips, trailers and references do not count as final delivery masters. Existing video records without a role are treated as episode masters for backward compatibility. Series-level assets can represent key art, music packages, or shared production documents. Episode-level assets can represent the episode master, scene renders, dialogue stems, subtitles, or other deliverables.
+An asset can be linked to a series and optionally to one episode. Video assets have an explicit role: `Máster de episodio`, `Clip de escena`, `Tráiler`, or `Referencia`. The streaming catalog selects only current episode masters. A rendered master can declare `subtitleBurnedIn`; when true, Streaming App suppresses the sidecar subtitle track to avoid duplicate captions. The release gate validates episode masters only; scene clips, trailers and references do not count as final delivery masters. Existing video records without a role are treated as episode masters for backward compatibility. Series-level assets can represent key art, music packages, or shared production documents. Episode-level assets can represent the episode master, scene renders, dialogue stems, subtitles, or other deliverables.
 
 ## Technical master metadata
 
