@@ -64,7 +64,11 @@ export async function POST(request: Request) {
 
   let input: StoryInput;
   try {
-    input = JSON.parse(raw) as StoryInput;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return NextResponse.json({ error: "json", message: "El cuerpo debe ser un objeto JSON." }, { status: 400 });
+    }
+    input = parsed as StoryInput;
   } catch {
     return NextResponse.json({ error: "json", message: "El cuerpo no contiene JSON válido." }, { status: 400 });
   }
