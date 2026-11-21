@@ -154,6 +154,8 @@ export async function generateEpisodeScript(formData: FormData) {
   if (!seriesId || !episodeId) redirect("/studio");
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) fail(seriesId, "ai-not-configured");
+  const model = process.env.GEMINI_MODEL;
+  if (!model) fail(seriesId, "ai-model-not-configured");
 
   const { supabase, ownerId } = await ownerClient();
   const [{ data: series, error: seriesError }, { data: episode, error: episodeError }, { data: bible }, { data: characters }] = await Promise.all([
@@ -186,7 +188,6 @@ export async function generateEpisodeScript(formData: FormData) {
     "INDICACIONES DEL CREADOR: " + (brief || "Desarrolla el episodio respetando la continuidad y dejando un cliffhanger potente."),
   ].join("\n");
 
-  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
   const configuredLimit = Number.parseInt(process.env.GEMINI_DAILY_DRAFT_LIMIT || "20", 10);
   const dailyLimit = Number.isFinite(configuredLimit) ? Math.max(1, Math.min(100, configuredLimit)) : 20;
   const dayStart = new Date();
