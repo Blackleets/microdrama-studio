@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 type StoryInput = {
   series?: { title?: string; logline?: string; genre?: string; style?: string; bible?: string; characters?: Array<{ name?: string; role?: string; description?: string }> };
@@ -119,7 +120,7 @@ export async function POST(request: Request) {
       headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({ model, input: prompt }),
       cache: "no-store",
-      signal: AbortSignal.timeout(90000),
+      signal: AbortSignal.timeout(55000),
     });
   } catch {
     return NextResponse.json({ error: "network", message: "No se pudo conectar con Gemini." }, { status: 502 });
