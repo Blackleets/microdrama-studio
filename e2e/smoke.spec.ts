@@ -220,3 +220,45 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   await expect(localPlayer).toHaveAttribute("src", /^blob:/);
   await expect(localPlayer.locator("track")).toHaveCount(0);
 });
+
+test("asset rights cannot be confirmed without license evidence", async ({ page }) => {
+  await page.goto("/studio");
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "rights-series",
+      title: "Rights Test",
+      episodes: [],
+      status: "Desarrollo",
+    }]));
+  });
+  await page.goto("/studio/assets");
+  await page.getByLabel("Serie asociada").selectOption("rights-series");
+  await page.getByLabel("Nombre del activo").fill("Master sin licencia");
+  await page.getByRole("button", { name: "Registrar activo" }).click();
+  await page.getByRole("button", { name: "Cambiar derechos" }).first().click();
+  await expect(page.getByText(/No se pueden confirmar derechos sin identificar/)).toBeVisible();
+  await expect(page.getByText("PENDIENTE").first()).toBeVisible();
+});
+
+test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
+  await page.goto("/studio");
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "subtitle-series",
+      title: "Subtitle Test",
+      episodes: [],
+      status: "Desarrollo",
+    }]));
+  });
+  await page.goto("/studio/assets");
+  await page.getByLabel("Serie asociada").selectOption("subtitle-series");
+  await page.getByLabel("Nombre del activo").fill("Overlapping captions");
+  await page.getByLabel("Tipo").selectOption("Documento");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "overlap.srt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("1\\n00:00:00,000 --> 00:00:02,000\\nFirst line\\n\\n2\\n00:00:01,000 --> 00:00:03,000\\nSecond line"),
+  });
+  await expect(page.getByText("ESTRUCTURA VÁLIDA")).toBeVisible();
+  await expect(page.getByText(/2 cues de subtítulos validados localmente/)).toBeVisible();
+});
