@@ -262,3 +262,26 @@ test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
   await expect(page.getByText("ESTRUCTURA VÁLIDA")).toBeVisible();
   await expect(page.getByText(/2 cues de subtítulos validados localmente/)).toBeVisible();
 });
+
+test("confirming asset rights requires operator acknowledgement and invalidates release QA", async ({ page }) => {
+  await page.goto("/studio");
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "rights-approval-series",
+      title: "Rights Approval Test",
+      episodes: [],
+      status: "Publicado",
+    }]));
+    localStorage.setItem("microdrama-release-qa-v1:rights-approval-series", JSON.stringify([true, true, true]));
+  });
+  await page.goto("/studio/assets");
+  await page.getByLabel("Serie asociada").selectOption("rights-approval-series");
+  await page.getByLabel("Nombre del activo").fill("Licensed master");
+  await page.getByLabel("Licencia / titularidad").fill("Cesión comercial firmada");
+  await page.getByRole("button", { name: "Registrar activo" }).click();
+  page.once("dialog", dialog => dialog.accept());
+  await page.getByRole("button", { name: "Cambiar derechos" }).first().click();
+  await expect(page.getByText("CONFIRMADO").first()).toBeVisible();
+  const qa = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-release-qa-v1:rights-approval-series") || "[]"));
+  expect(qa).toEqual([false, false, false]);
+});
