@@ -1,0 +1,64 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, ArrowDown, ArrowUp, Clock3, Film, Music2, Plus, Save, Subtitles, Trash2, History, RotateCcw } from "lucide-react";
+
+type Episode={id:string;title:string;number:number;scenes:string[]};
+type Series={id:string;title:string;episodes:Episode[]};
+type Asset={id:string;seriesId:string;episodeId?:string;title:string;kind:string;fileId?:string;versionStatus?:string;audioLanguage?:string;subtitleLanguage?:string;subtitleValidation?:string;subtitleCueCount?:number};
+type Scene={id:string;title:string;durationSeconds:number;videoAssetId:string};
+type Edit={scenes:Scene[];audioAssetId:string;subtitleAssetId:string};
+type Snapshot={id:string;name:string;createdAt:string;edit:Edit};
+const SERIES_KEY="microdrama-studio-local-v1",ASSETS_KEY="microdrama-assets-v1";
+const editKey=(id:string)=>"microdrama-edit-timeline-v1:"+id;
+const snapshotKey=(id:string)=>"microdrama-edit-snapshots-v1:"+id;
+const makeId=()=>crypto.randomUUID();
+const fmt=(n:number)=>{const s=Math.max(0,Math.round(n));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");};
+const fresh=(ep:Episode):Edit=>({scenes:(ep.scenes||[]).map(title=>({id:makeId(),title,durationSeconds:8,videoAssetId:""})),audioAssetId:"",subtitleAssetId:""});
+
+export default function PostProductionPage(){
+ const [series,setSeries]=useState<Series[]>([]),[assets,setAssets]=useState<Asset[]>([]);
+ const [seriesId,setSeriesId]=useState(""),[episodeId,setEpisodeId]=useState("");
+ const [edit,setEdit]=useState<Edit|null>(null),[snapshots,setSnapshots]=useState<Snapshot[]>([]);
+ const [snapshotName,setSnapshotName]=useState(""),[notice,setNotice]=useState("Montaje guardado localmente."),[ready,setReady]=useState(false);
+ useEffect(()=>{try{const ss=JSON.parse(localStorage.getItem(SERIES_KEY)||"[]") as Series[];const aa=JSON.parse(localStorage.getItem(ASSETS_KEY)||"[]") as Asset[];setSeries(ss);setAssets(aa.filter(a=>a.versionStatus!=="Archivada"));const first=ss.find(s=>s.episodes?.length);if(first){setSeriesId(first.id);setEpisodeId(first.episodes[0].id);}}catch{setNotice("No se pudieron leer los datos locales.");}setReady(true);},[]);
+ const active=series.find(s=>s.id===seriesId),episodes=active?.episodes||[],episode=episodes.find(e=>e.id===episodeId);
+ const linked=useMemo(()=>assets.filter(a=>a.seriesId===seriesId&&(!a.episodeId||a.episodeId===episodeId)&&!!a.fileId),[assets,seriesId,episodeId]);
+ const videos=linked.filter(a=>a.kind==="Vídeo"),audio=linked.filter(a=>a.kind==="Audio"),subs=linked.filter(a=>a.kind==="Documento"&&a.subtitleValidation==="Válido"&&(a.subtitleCueCount||0)>0);
+ useEffect(()=>{if(!ready||!episode)return;try{const raw=localStorage.getItem(editKey(episode.id));const data=raw?JSON.parse(raw) as Edit:null;setEdit(data&&Array.isArray(data.scenes)?data:fresh(episode));const ss=JSON.parse(localStorage.getItem(snapshotKey(episode.id))||"[]") as Snapshot[];setSnapshots(Array.isArray(ss)?ss:[]);}catch{setEdit(fresh(episode));setSnapshots([]);}},[ready,episode?.id]);
+ useEffect(()=>{if(ready&&episode&&edit)localStorage.setItem(editKey(episode.id),JSON.stringify(edit));},[ready,episode?.id,edit]);
+ const total=edit?.scenes.reduce((n,s)=>n+Math.max(0,Number(s.durationSeconds)||0),0)||0;
+ const assigned=edit?.scenes.filter(s=>videos.some(a=>a.id===s.videoAssetId)).length||0;
+ function patch(id:string,p:Partial<Scene>){setEdit(v=>v?({...v,scenes:v.scenes.map(s=>s.id===id?{...s,...p}:s)}):v);}
+ function move(i:number,d:number){setEdit(v=>{if(!v)return v;const j=i+d;if(j<0||j>=v.scenes.length)return v;const next=[...v.scenes];[next[i],next[j]]=[next[j],next[i]];return {...v,scenes:next};});}
+ function snapshot(){if(!edit||!episode)return;const item:Snapshot={id:makeId(),name:snapshotName.trim()||("Montaje "+(snapshots.length+1)),createdAt:new Date().toISOString(),edit:JSON.parse(JSON.stringify(edit)) as Edit};const next=[item,...snapshots];setSnapshots(next);localStorage.setItem(snapshotKey(episode.id),JSON.stringify(next));setSnapshotName("");setNotice("Versión guardada.");}
+ if(!ready)return <main className="min-h-screen bg-[#090b10] text-white grid place-items-center">Cargando editor…</main>;
+ return <main className="min-h-screen bg-[#090b10] text-[#f4f5f8]">
+  <header className="sticky top-0 z-20 border-b border-[#252a36] bg-[#090b10]/95 px-4 md:px-8 py-4 flex justify-between items-center"><div className="flex items-center gap-3"><Link href="/studio" className="border border-[#303644] rounded-lg p-2"><ArrowLeft size={16}/></Link><div><div className="text-[9px] tracking-[.2em] text-[#d6ff63]">MICRODRAMA / POST</div><h1 className="font-semibold text-lg">Editor de montaje</h1></div></div><Link href="/studio/assets" className="text-xs border border-[#303644] rounded-lg px-3 py-2">Biblioteca de activos</Link></header>
+  <div className="max-w-[1440px] mx-auto p-4 md:p-8">
+   <div className="grid md:grid-cols-[1fr_1fr_auto] gap-3 mb-6">
+    <label className="text-[10px] text-[#7f899a]">SERIE<select value={seriesId} onChange={e=>{setSeriesId(e.target.value);const s=series.find(x=>x.id===e.target.value);setEpisodeId(s?.episodes?.[0]?.id||"");}} className="field mt-2"><option value="">Seleccionar</option>{series.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
+    <label className="text-[10px] text-[#7f899a]">EPISODIO<select value={episodeId} onChange={e=>setEpisodeId(e.target.value)} className="field mt-2"><option value="">Seleccionar</option>{episodes.map(e=><option key={e.id} value={e.id}>E{e.number} · {e.title}</option>)}</select></label>
+    <div className="rounded-xl border border-[#303644] bg-[#11151e] px-4 py-3"><div className="text-[9px] text-[#7f899a]">DURACIÓN</div><div className="text-xl font-semibold">{fmt(total)}</div></div>
+   </div>
+   {!episode||!edit?<div className="rounded-2xl border border-dashed border-[#384052] p-12 text-center"><Film className="mx-auto text-[#d6ff63]" size={28}/><h2 className="mt-4 font-semibold">Selecciona un episodio</h2><p className="text-sm text-[#818a9a] mt-2">Crea primero una serie y un episodio en Studio.</p></div>:<div className="grid xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.75fr)] gap-5">
+    <section className="rounded-2xl border border-[#252a36] bg-[#11151e] p-4 md:p-6 min-w-0">
+     <div className="flex justify-between items-center gap-3 mb-5"><div><div className="text-[9px] tracking-[.2em] text-[#d6ff63]">SECUENCIA / EPISODIO {episode.number}</div><h2 className="font-semibold mt-1">{episode.title}</h2><p className="text-[10px] text-[#7f899a] mt-1">Orden y duración prevista de cada escena</p></div><button onClick={()=>setEdit(v=>v?({...v,scenes:[...v.scenes,{id:makeId(),title:"Nueva escena",durationSeconds:8,videoAssetId:""}]}):v)} className="rounded-lg bg-[#d6ff63] text-black text-xs font-semibold px-3 py-2 flex items-center gap-2"><Plus size={14}/> Añadir</button></div>
+     <div className="space-y-3">{edit.scenes.map((scene,i)=>{const start=edit.scenes.slice(0,i).reduce((n,s)=>n+Math.max(0,Number(s.durationSeconds)||0),0);const width=Math.max(8,Math.min(100,(scene.durationSeconds/Math.max(1,total))*100));return <div key={scene.id} className="rounded-xl border border-[#2b3342] bg-[#0b0f16] p-3 md:p-4">
+      <div className="flex items-center gap-2 mb-3"><span className="w-7 h-7 rounded-lg bg-[#d6ff63]/10 text-[#d6ff63] grid place-items-center text-[10px]">{String(i+1).padStart(2,"0")}</span><input value={scene.title} onChange={e=>patch(scene.id,{title:e.target.value})} className="min-w-0 flex-1 bg-transparent outline-none text-xs font-semibold"/><span className="text-[10px] text-[#8d98a8]">{fmt(start)}</span><button disabled={i===0} onClick={()=>move(i,-1)} className="p-1 text-[#aeb7c6] disabled:opacity-20" title="Subir"><ArrowUp size={14}/></button><button disabled={i===edit.scenes.length-1} onClick={()=>move(i,1)} className="p-1 text-[#aeb7c6] disabled:opacity-20" title="Bajar"><ArrowDown size={14}/></button><button onClick={()=>setEdit(v=>v?({...v,scenes:v.scenes.filter(x=>x.id!==scene.id)}):v)} className="p-1 text-[#c47d7d]" title="Eliminar"><Trash2 size={14}/></button></div>
+      <div className="h-8 rounded-md bg-[#1a2230] overflow-hidden mb-3"><div className="h-full rounded-md bg-gradient-to-r from-[#8fae42] to-[#d6ff63]/80 flex items-center px-3 text-[9px] text-[#10140a] font-bold whitespace-nowrap overflow-hidden" style={{width:width+"%"}}>VÍDEO · {fmt(scene.durationSeconds)}</div></div>
+      <div className="grid md:grid-cols-[1fr_110px] gap-2"><label className="text-[9px] text-[#788496]">MÁSTER DE VÍDEO<select value={scene.videoAssetId} onChange={e=>patch(scene.id,{videoAssetId:e.target.value})} className="field mt-1"><option value="">Sin asignar</option>{videos.map(a=><option key={a.id} value={a.id}>{a.title}</option>)}</select></label><label className="text-[9px] text-[#788496]">DURACIÓN (s)<input type="number" min="0.1" step="0.1" value={scene.durationSeconds} onChange={e=>patch(scene.id,{durationSeconds:Math.max(.1,Number(e.target.value)||.1)})} className="field mt-1"/></label></div>
+     </div>;})}{edit.scenes.length===0&&<p className="text-xs text-[#7f899a] text-center py-10">Añade una escena para empezar.</p>}</div>
+     <div className="mt-5 pt-4 border-t border-[#252a36] flex justify-between text-[10px] text-[#8994a5]"><span>{edit.scenes.length} escenas · {assigned}/{edit.scenes.length} con vídeo</span><span>{fmt(total)} total</span></div>
+    </section>
+    <aside className="space-y-5">
+     <section className="rounded-2xl border border-[#252a36] bg-[#11151e] p-5"><div className="flex items-center gap-2"><Music2 size={16} className="text-[#d6ff63]"/><h3 className="text-sm font-semibold">Pista de audio</h3></div><p className="text-[10px] text-[#7f899a] my-3">Archivo importado vinculado al episodio o serie.</p><select value={edit.audioAssetId} onChange={e=>setEdit(v=>v?({...v,audioAssetId:e.target.value}):v)} className="field"><option value="">Sin pista asignada</option>{audio.map(a=><option key={a.id} value={a.id}>{a.title}{a.audioLanguage?" · "+a.audioLanguage.toUpperCase():""}</option>)}</select><p className="text-[9px] text-[#7f899a] mt-2">{audio.length} archivos disponibles</p></section>
+     <section className="rounded-2xl border border-[#252a36] bg-[#11151e] p-5"><div className="flex items-center gap-2"><Subtitles size={16} className="text-[#d6ff63]"/><h3 className="text-sm font-semibold">Subtítulos</h3></div><p className="text-[10px] text-[#7f899a] my-3">Solo documentos SRT/VTT validados.</p><select value={edit.subtitleAssetId} onChange={e=>setEdit(v=>v?({...v,subtitleAssetId:e.target.value}):v)} className="field"><option value="">Sin subtítulos</option>{subs.map(a=><option key={a.id} value={a.id}>{a.title}{a.subtitleLanguage?" · "+a.subtitleLanguage.toUpperCase():""}</option>)}</select><p className="text-[9px] text-[#7f899a] mt-2">{subs.length} archivos válidos</p></section>
+     <section className="rounded-2xl border border-[#252a36] bg-[#11151e] p-5"><div className="flex items-center gap-2"><History size={16} className="text-[#d6ff63]"/><h3 className="text-sm font-semibold">Versiones de montaje</h3></div><div className="flex gap-2 mt-3"><input value={snapshotName} onChange={e=>setSnapshotName(e.target.value)} placeholder="Nombre de versión" className="field min-w-0"/><button onClick={snapshot} className="rounded-lg bg-[#d6ff63] text-black px-3"><Save size={15}/></button></div><div className="space-y-2 mt-4 max-h-[280px] overflow-y-auto">{snapshots.map(item=><div key={item.id} className="rounded-lg border border-[#2b3342] p-3"><div className="text-xs font-semibold">{item.name}</div><div className="text-[9px] text-[#7f899a] mt-1">{new Date(item.createdAt).toLocaleString()} · {item.edit.scenes.length} escenas</div><button onClick={()=>{setEdit(JSON.parse(JSON.stringify(item.edit)) as Edit);setNotice("Versión restaurada: "+item.name);}} className="text-[10px] text-[#d6ff63] mt-2 flex items-center gap-1"><RotateCcw size={11}/> Restaurar</button></div>)}{snapshots.length===0&&<p className="text-[10px] text-[#7f899a]">Aún no hay versiones.</p>}</div></section>
+    </aside>
+   </div>}
+   <div className="rounded-xl border border-[#d6ff63]/20 bg-[#d6ff63]/[.04] p-4 mt-5 flex gap-3"><Clock3 size={16} className="text-[#d6ff63] shrink-0"/><p className="text-[10px] leading-relaxed text-[#aab59b]"><strong className="text-[#d6ff63]">EDL local, no render final.</strong> El editor organiza escenas, duraciones y referencias a archivos reales. No corta ni mezcla medios, no genera MP4 y no sustituye un motor de render. Los archivos siguen en IndexedDB de este navegador. {notice}</p></div>
+  </div>
+ </main>;
+}
