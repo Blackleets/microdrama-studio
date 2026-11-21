@@ -43,3 +43,14 @@ Before enabling public distribution, implement and validate:
 6. Automated playback and output-integrity tests across supported browsers/devices.
 
 The local renderer is useful for production prototyping and same-browser review. It is not a substitute for a secure, durable public media pipeline.
+
+## Asset and subtitle safeguards
+
+- A local asset cannot be marked `Confirmado` through the registry controls unless its license/ownership field is populated and the operator explicitly acknowledges that they checked commercial rights and retain supporting evidence.
+- Changing rights on a current asset invalidates the series release QA flags. The confirmation is an internal operator declaration, not legal verification or proof of ownership.
+- SRT/WebVTT structural validation enforces cue timing order and non-empty cue text. Simultaneous/overlapping cues are permitted because they can be valid in real subtitle tracks.
+- The renderer validates source files and finite, non-negative, increasing source ranges before recording. During rendering, all simultaneously active caption cues are composited into the frame.
+
+## Automated coverage
+
+The Playwright smoke suite covers the rights-confirmation gate, QA invalidation after rights changes, overlapping subtitle cue acceptance, and the existing local render-to-streaming flow. CI is configured to run dependency audit, lint, production build and Chromium E2E tests on pushes and pull requests to `main`. A commit is not considered verified until those remote checks complete successfully.
