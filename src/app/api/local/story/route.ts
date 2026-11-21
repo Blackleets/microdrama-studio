@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -17,8 +18,12 @@ function bounded(value: unknown, max: number) {
 export async function POST(request: Request) {
   const expectedToken = process.env.LOCAL_STUDIO_AI_TOKEN;
   const providedToken = request.headers.get("x-studio-token");
-  if (!expectedToken || !providedToken || providedToken !== expectedToken) {
-    return NextResponse.json({ error: "unauthorized", message: "Configura el token de acceso de IA del Studio." }, { status: 401 });
+  if (!expectedToken || expectedToken.length < 32) {
+    return NextResponse.json({ error: "token_not_configured", message: "Configura LOCAL_STUDIO_AI_TOKEN con al menos 32 caracteres aleatorios." }, { status: 503 });
+  }
+  const tokenMatches = Boolean(providedToken && Buffer.byteLength(providedToken) === Buffer.byteLength(expectedToken) && timingSafeEqual(Buffer.from(providedToken), Buffer.from(expectedToken)));
+  if (!tokenMatches || !providedToken) {
+    return NextResponse.json({ error: "unauthorized", message: "El token de acceso de IA no es válido." }, { status: 401 });
   }
 
   const origin = request.headers.get("origin");
