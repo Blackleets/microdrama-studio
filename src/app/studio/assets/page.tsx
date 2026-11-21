@@ -9,7 +9,7 @@ type Rights = "Pendiente" | "Confirmado" | "Restringido";
 type EpisodeOption = { id:string; title:string; number:number };
 type SeriesOption = { id:string; title:string; episodes?:EpisodeOption[] };
 type SubtitleReport={format:"SRT"|"VTT";cueCount:number;errors:string[];language:string};
-type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleLanguage?:string;subtitleValidation?:"Válido"|"Con errores"; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleLanguage?:string;subtitleValidation?:"Válido"|"Con errores";
+type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleLanguage?:string;subtitleValidation?:"Válido"|"Con errores";
 
  id:string; logicalId:string; seriesId:string; seriesTitle:string; episodeId?:string; episodeTitle?:string;
  title:string; kind:AssetKind; source:string; url:string; rights:Rights; license:string;
