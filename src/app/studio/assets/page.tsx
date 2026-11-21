@@ -78,6 +78,7 @@ export default function AssetRegistry(){
  const [selectedFile,setSelectedFile]=useState<File|null>(null);
  const [saving,setSaving]=useState(false);
  const [preview,setPreview]=useState<{asset:Asset;url:string}|null>(null);
+ const [previewText,setPreviewText]=useState<string|null>(null);
  const [probing,setProbing]=useState(false);
  const [subtitleReport,setSubtitleReport]=useState<SubtitleReport|null>(null);
  const [subtitleLanguage,setSubtitleLanguage]=useState("es");
@@ -163,8 +164,8 @@ export default function AssetRegistry(){
  function cycleRights(id:string){setAssets(p=>p.map(a=>a.id===id?{...a,rights:a.rights==="Pendiente"?"Confirmado":a.rights==="Confirmado"?"Restringido":"Pendiente"}:a));}
  function restoreVersion(asset:Asset){if(!confirm("¿Restaurar "+asset.version+" como versión actual? Se volverán a revisar sus derechos."))return;setAssets(p=>p.map(a=>a.logicalId===asset.logicalId?{...a,versionStatus:a.id===asset.id?"Actual" as const:"Archivada" as const,rights:a.id===asset.id?"Pendiente" as Rights:a.rights}:a));setNotice("Versión restaurada. Debes volver a confirmar derechos y QA.");}
  function deleteAsset(asset:Asset){if(confirm("¿Eliminar esta versión del registro y su archivo local?")){setAssets(p=>p.filter(a=>a.id!==asset.id));if(asset.fileId)void removeMediaFile(asset.fileId);}}
- async function openPreview(asset:Asset){if(!asset.fileId){setNotice("Este activo no tiene un archivo cargado.");return;}try{const file=await getMediaFile(asset.fileId);if(!file){setNotice("No se encontró el archivo en el almacenamiento local.");return;}if(preview)URL.revokeObjectURL(preview.url);setPreview({asset,url:URL.createObjectURL(file)});}catch{setNotice("No se pudo abrir el archivo local.");}}
- function closePreview(){if(preview)URL.revokeObjectURL(preview.url);setPreview(null);}
+ async function openPreview(asset:Asset){if(!asset.fileId){setNotice("Este activo no tiene un archivo cargado.");return;}try{const file=await getMediaFile(asset.fileId);if(!file){setNotice("No se encontró el archivo en el almacenamiento local.");return;}if(preview)URL.revokeObjectURL(preview.url);setPreviewText(asset.kind==="Documento"&&/\.(srt|vtt)$/i.test(file.name)?await file.text():null);setPreview({asset,url:URL.createObjectURL(file)});}catch{setNotice("No se pudo abrir el archivo local.");}}
+ function closePreview(){if(preview)URL.revokeObjectURL(preview.url);setPreview(null);setPreviewText(null);}
  if(!ready)return <main className="min-h-screen bg-[#090b10] text-white grid place-items-center">Cargando registro…</main>;
  return <main className="min-h-screen bg-[#090b10] text-[#f4f5f8]">
   <header className="h-[68px] border-b border-[#252a36] px-5 md:px-8 flex items-center justify-between">
@@ -209,7 +210,7 @@ export default function AssetRegistry(){
     </section>
    </div>
    <div className="mt-6 flex items-center gap-2 text-[10px] text-[#697486]"><Check size={12} className="text-[#d6ff63]"/>{notice} · Los datos permanecen en este navegador.</div>
-  {preview&&<div className="fixed inset-0 z-50 bg-black/90 p-4 md:p-10 flex items-center justify-center" onClick={closePreview}><div className="w-full max-w-4xl max-h-full rounded-2xl border border-[#343b49] bg-[#10141c] p-4 overflow-auto" onClick={e=>e.stopPropagation()}><div className="flex items-center justify-between mb-4"><div><div className="text-sm font-semibold">{preview.asset.title}</div><div className="text-[10px] text-[#8993a3]">{preview.asset.fileName}</div></div><button onClick={closePreview} className="text-xs text-[#d6ff63]">Cerrar</button></div>{preview.asset.kind==="Vídeo"?<video src={preview.url} controls playsInline className="max-h-[75vh] w-full bg-black rounded-lg"/>:preview.asset.kind==="Audio"?<audio src={preview.url} controls className="w-full"/>:preview.asset.kind==="Imagen"?<img src={preview.url} alt={preview.asset.title} className="max-h-[75vh] mx-auto object-contain"/>:<a href={preview.url} download={preview.asset.fileName} className="text-sm text-[#d6ff63]">Descargar documento</a>}</div></div>}
+  {preview&&<div className="fixed inset-0 z-50 bg-black/90 p-4 md:p-10 flex items-center justify-center" onClick={closePreview}><div className="w-full max-w-4xl max-h-full rounded-2xl border border-[#343b49] bg-[#10141c] p-4 overflow-auto" onClick={e=>e.stopPropagation()}><div className="flex items-center justify-between mb-4"><div><div className="text-sm font-semibold">{preview.asset.title}</div><div className="text-[10px] text-[#8993a3]">{preview.asset.fileName}</div></div><button onClick={closePreview} className="text-xs text-[#d6ff63]">Cerrar</button></div>{preview.asset.kind==="Vídeo"?<video src={preview.url} controls playsInline className="max-h-[75vh] w-full bg-black rounded-lg"/>:preview.asset.kind==="Audio"?<audio src={preview.url} controls className="w-full"/>:preview.asset.kind==="Imagen"?<img src={preview.url} alt={preview.asset.title} className="max-h-[75vh] mx-auto object-contain"/>:{previewText!==null?<div><pre className="max-h-[65vh] overflow-auto whitespace-pre-wrap rounded-lg bg-black/40 p-4 text-xs leading-6 text-[#cbd3df]">{previewText}</pre><a href={preview.url} download={preview.asset.fileName} className="mt-3 inline-block text-xs text-[#d6ff63]">Descargar subtítulos originales</a></div>:<a href={preview.url} download={preview.asset.fileName} className="text-sm text-[#d6ff63]">Descargar documento</a>}}</div></div>}
   </div>
  </main>;
 }
