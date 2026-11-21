@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, FileImage, FileVideo, FileAudio, FileText, Plus, ShieldCheck, Trash2, ExternalLink, History, Archive } from "lucide-react";
 
 type AssetKind = "Vídeo" | "Imagen" | "Audio" | "Documento";
+type AssetRole = "Máster de episodio" | "Clip de escena" | "Tráiler" | "Referencia";
 type Rights = "Pendiente" | "Confirmado" | "Restringido";
 type EpisodeOption = { id:string; title:string; number:number };
 type SeriesOption = { id:string; title:string; episodes?:EpisodeOption[] };
@@ -12,7 +13,7 @@ type SubtitleReport={format:"SRT"|"VTT";cueCount:number;durationSeconds:number;e
 type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleDurationSeconds?:number;subtitleLanguage?:string;audioLanguage?:string;subtitleValidation?:"Válido"|"Con errores";
 
  id:string; logicalId:string; seriesId:string; seriesTitle:string; episodeId?:string; episodeTitle?:string;
- title:string; kind:AssetKind; source:string; url:string; rights:Rights; license:string;
+ title:string; kind:AssetKind; assetRole?:AssetRole; source:string; url:string; rights:Rights; license:string;
  version:string; versionNumber:number; versionStatus:"Actual"|"Archivada"; notes:string; createdAt:string;
  width?:number; height?:number; fps?:number; durationSeconds?:number; codec?:string; audioTracks?:number; subtitleTracks?:number; checksum?:string;
 };
@@ -75,6 +76,7 @@ export default function AssetRegistry(){
  const [ready,setReady]=useState(false);
  const [title,setTitle]=useState("");
  const [kind,setKind]=useState<AssetKind>("Vídeo");
+ const [assetRole,setAssetRole]=useState<AssetRole>("Máster de episodio");
  const [source,setSource]=useState("Generado por IA");
  const [url,setUrl]=useState("");
  const [selectedFile,setSelectedFile]=useState<File|null>(null);
@@ -104,7 +106,7 @@ export default function AssetRegistry(){
  useEffect(()=>{
   try{
    const raw=JSON.parse(localStorage.getItem(KEY)||"[]") as Partial<Asset>[];
-   setAssets(raw.map(a=>({...a,logicalId:a.logicalId||a.id||crypto.randomUUID(),versionNumber:a.versionNumber||Number((a.version||"v1").replace(/[^0-9]/g,""))||1,versionStatus:a.versionStatus||"Actual"})) as Asset[]);
+   setAssets(raw.map(a=>({...a,logicalId:a.logicalId||a.id||crypto.randomUUID(),versionNumber:a.versionNumber||Number((a.version||"v1").replace(/[^0-9]/g,""))||1,versionStatus:a.versionStatus||"Actual",assetRole:a.assetRole||(a.kind==="Vídeo"?"Máster de episodio":undefined)})) as Asset[]);
    const stored=JSON.parse(localStorage.getItem("microdrama-studio-local-v1")||"[]") as SeriesOption[];
    setSeries(stored);if(stored[0])setSeriesId(stored[0].id);
   }catch{setAssets([]);setSeries([])}
@@ -137,14 +139,14 @@ export default function AssetRegistry(){
   const item:Asset={
    id:crypto.randomUUID(),logicalId:crypto.randomUUID(),...(fileId?{fileId,fileName:selectedFile?.name,fileSize:selectedFile?.size,mimeType:selectedFile?.type}:{}),seriesId:selectedSeries.id,seriesTitle:selectedSeries.title,
    ...(episode?{episodeId:episode.id,episodeTitle:"EP"+String(episode.number).padStart(2,"0")+" · "+episode.title}:{}),
-   title:title.trim(),kind,source,url:url.trim(),rights,license:license.trim(),version:version.trim()||"v1",
+   title:title.trim(),kind,assetRole:kind==="Vídeo"?assetRole:undefined,source,url:url.trim(),rights,license:license.trim(),version:version.trim()||"v1",
    versionNumber:numericVersion,versionStatus:"Actual",notes:notes.trim(),createdAt:new Date().toISOString(),
    width:asNumber(width),height:asNumber(height),fps:asNumber(fps),durationSeconds:asNumber(duration),codec:codec.trim()||undefined,
    audioTracks:asNumber(audioTracks),subtitleTracks:asNumber(subtitleTracks),...(subtitleReport?{subtitleFormat:subtitleReport.format,subtitleCueCount:subtitleReport.cueCount,subtitleDurationSeconds:subtitleReport.durationSeconds,subtitleLanguage:subtitleLanguage.trim()||"und",subtitleValidation:subtitleReport.errors.length?"Con errores" as const:"Válido" as const}:{}),audioLanguage:kind==="Audio"?(audioLanguage.trim()||"und"):undefined,checksum:finalChecksum||undefined
   };
   setAssets(p=>[item,...p]);setTitle("");setUrl("");setSelectedFile(null);setLicense("");setVersion("v1");setNotes("");setSaving(false);
   setWidth("");setHeight("");setFps("");setDuration("");setCodec("");setAudioTracks("");setSubtitleTracks("");setChecksum("");
-  setRights("Pendiente");setEpisodeId("");setSubtitleReport(null);setSubtitleLanguage("es");setAudioLanguage("es");setNotice(generatedChecksum?"Activo guardado. SHA-256 calculado automáticamente.":"Activo y metadatos técnicos registrados en este navegador.");
+  setRights("Pendiente");setAssetRole("Máster de episodio");setEpisodeId("");setSubtitleReport(null);setSubtitleLanguage("es");setAudioLanguage("es");setNotice(generatedChecksum?"Activo guardado. SHA-256 calculado automáticamente.":"Activo y metadatos técnicos registrados en este navegador.");
  }
  async function handleFileSelected(file:File|null){
   setSelectedFile(file);setSubtitleReport(null);
@@ -191,6 +193,7 @@ export default function AssetRegistry(){
       <Field label="Episodio (opcional)"><select value={episodeId} onChange={e=>setEpisodeId(e.target.value)} className="control"><option value="">Activo general de la serie</option>{episodes.map(e=><option key={e.id} value={e.id}>EP{String(e.number).padStart(2,"0")} · {e.title}</option>)}</select></Field>
       <Field label="Nombre del activo"><input value={title} onChange={e=>setTitle(e.target.value)} maxLength={100} placeholder="EP01_MASTER_FINAL" className="control"/></Field>
       <div className="grid grid-cols-2 gap-3"><Field label="Tipo"><select value={kind} onChange={e=>setKind(e.target.value as AssetKind)} className="control">{kinds.map(k=><option key={k}>{k}</option>)}</select></Field><Field label="Versión inicial"><input value={version} onChange={e=>setVersion(e.target.value)} placeholder="v1" className="control"/></Field></div>
+      {kind==="Vídeo"&&<Field label="Uso del vídeo"><select value={assetRole} onChange={e=>setAssetRole(e.target.value as AssetRole)} className="control"><option>Máster de episodio</option><option>Clip de escena</option><option>Tráiler</option><option>Referencia</option></select></Field>}
       <Field label="Procedencia"><select value={source} onChange={e=>setSource(e.target.value)} className="control"><option>Generado por IA</option><option>Grabación propia</option><option>Proveedor externo</option><option>Stock / licencia</option><option>Cliente / talento</option></select></Field>
       <Field label="Archivo maestro (máx. 500 MB)"><input type="file" accept={kind==="Vídeo"?"video/*":kind==="Imagen"?"image/*":kind==="Audio"?"audio/*":".pdf,.txt,.doc,.docx,.srt,.vtt"} onClick={e=>{e.currentTarget.value="";}} onChange={e=>void handleFileSelected(e.target.files?.[0]??null)} className="control file:mr-3 file:rounded-md file:border-0 file:bg-[#d6ff63] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-black"/>{selectedFile&&<span className="block mt-2 text-[10px] text-[#d6ff63]">{selectedFile.name} · {(selectedFile.size/1024/1024).toFixed(1)} MB</span>}{probing&&<span className="block mt-1 text-[10px] text-[#aeb7c6]">Leyendo metadatos básicos…</span>}</Field>
       <Field label="URL externa (opcional)"><input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://…" className="control"/></Field>
