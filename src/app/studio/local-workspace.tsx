@@ -68,7 +68,7 @@ export default function LocalWorkspace(){
  useEffect(()=>{setQaReady(false);},[activeId]);
 
  useEffect(()=>{try{const raw=localStorage.getItem(STORAGE_KEY);const data=raw?JSON.parse(raw) as Series[]:starter;setSeries(data);setActiveId(data[0]?.id??"");if(!raw)localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch{setSeries(starter);setActiveId(starter[0].id);}setHydrated(true);},[]);
- useEffect(()=>{if(hydrated)localStorage.setItem(STORAGE_KEY,JSON.stringify(series));},[series,hydrated]);
+ useEffect(()=>{if(!hydrated)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(series));}catch{setNotice("El almacenamiento local está lleno. Exporta una copia y libera espacio antes de continuar.");}},[series,hydrated]);
  const active=series.find(s=>s.id===activeId)??null;
  const episode=active?.episodes.find(e=>e.id===selectedEpisode)??active?.episodes[0]??null;
  const filtered=useMemo(()=>series.filter(s=>s.title.toLowerCase().includes(query.toLowerCase())),[series,query]);
