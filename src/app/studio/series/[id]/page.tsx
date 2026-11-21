@@ -71,6 +71,7 @@ export default async function SeriesPage({
       {noticeKey && <div role="status" className="mt-5 rounded-xl border border-[#46552a] bg-[#171e12] px-4 py-3 text-sm text-[#d6ff63]">{notices[noticeKey]}</div>}
       {query.error && <div role="alert" className="mt-5 rounded-xl border border-red-900 bg-red-950/30 px-4 py-3 text-sm text-red-300">{({
         "ai-not-configured": "Story Engine desactivado: falta configurar GEMINI_API_KEY en el servidor.",
+        "ai-model-not-configured": "Configura GEMINI_MODEL con un identificador habilitado en tu cuenta de Google AI.",
         "ai-context": "No se pudo cargar el contexto narrativo del episodio.",
         "ai-network": "No se pudo conectar con el proveedor de IA. Inténtalo de nuevo.",
         "ai-limit": "El proveedor ha limitado temporalmente las solicitudes. Espera e inténtalo más tarde.",
