@@ -49,7 +49,6 @@ function parseCaptions(text: string): CaptionCue[] {
     const end = parseTime(timeMatch[2]);
     const cueText = lines.slice(index + 1).join(" ").replace(/<[^>]*>/g, "").trim();
     if (Number.isFinite(start) && Number.isFinite(end) && end > start && cueText) cues.push({ start, end, text: cueText });
-    void match;
   }
   return cues;
 }
@@ -157,6 +156,7 @@ export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<Lo
   let audioSource: MediaElementAudioSourceNode | null = null;
   let audioGain: GainNode | null = null;
   let elapsed = 0;
+  let lastProgress = -1;
   let completed = false;
 
   try {
@@ -165,8 +165,9 @@ export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<Lo
       audioElement = document.createElement("audio");
       audioElement.preload = "auto";
       audioObjectUrl = URL.createObjectURL(options.audioFile);
+      const audioReady = waitForEvent(audioElement, "canplay");
       audioElement.src = audioObjectUrl;
-      await waitForEvent(audioElement, "canplay");
+      await audioReady;
       audioSource = audioContext.createMediaElementSource(audioElement);
       audioGain = audioContext.createGain();
       audioGain.gain.value = 0.7;
@@ -181,8 +182,9 @@ export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<Lo
       const videoUrl = URL.createObjectURL(scene.file);
       video.preload = "auto";
       video.playsInline = true;
+      const videoReady = waitForEvent(video, "loadedmetadata");
       video.src = videoUrl;
-      await waitForEvent(video, "loadedmetadata");
+      await videoReady;
       if (!video.videoWidth || !video.videoHeight || !Number.isFinite(video.duration)) {
         URL.revokeObjectURL(videoUrl);
         throw new Error("Uno de los clips no tiene metadatos de vídeo utilizables.");
@@ -207,7 +209,6 @@ export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<Lo
           cleanup();
           reject(new Error("El render se ha quedado esperando un fotograma."));
         }, (end - start + 30) * 1000);
-        let frame = 0;
         const cleanup = () => window.clearTimeout(startedAt);
         const draw = () => {
           drawVideo(context, video, width, height);
@@ -215,16 +216,17 @@ export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<Lo
           const timelineTime = elapsed + clipElapsed;
           const cue = captionCues.find(item => timelineTime >= item.start && timelineTime < item.end);
           if (cue) drawCaption(context, cue.text, width, height);
-          options.onProgress?.(Math.min(99, Math.round(((elapsed + clipElapsed) / totalDuration) * 100)));
+          const percent = Math.min(99, Math.round(((elapsed + clipElapsed) / totalDuration) * 100));
+          if (percent !== lastProgress) { lastProgress = percent; options.onProgress?.(percent); }
           if (video.currentTime >= end - 0.025 || video.ended) {
             video.pause();
             cleanup();
             resolve();
             return;
           }
-          frame = window.requestAnimationFrame(draw);
+          window.requestAnimationFrame(draw);
         };
-        frame = window.requestAnimationFrame(draw);
+        window.requestAnimationFrame(draw);
       });
 
       video.pause();
@@ -243,7 +245,7 @@ export async function renderEpisodeWebm(options: LocalRenderOptions): Promise<Lo
     completed = true;
     options.onProgress?.(100);
     const codec = mimeType.includes("vp9") ? "VP9 / Opus" : mimeType.includes("vp8") ? "VP8 / Opus" : "WebM";
-    return { blob, mimeType, codec, durationSeconds: Number(totalDuration.toFixed(2)), width, height, fps };
+    return { blob, mimeType, codec, durationSeconds: Number(elapsed.toFixed(2)), width, height, fps };
   } finally {
     if (!completed && recorder.state !== "inactive") {
       try { recorder.stop(); } catch {}
