@@ -5,9 +5,9 @@ Repository: `Blackleets/microdrama-studio`
 Active working branch: `feat/streaming-cinematic-motion`  
 Base branch: `main` (do not push directly)  
 Open draft PR: https://github.com/Blackleets/microdrama-studio/pull/1  
-Latest known branch commit: `a0c9a0abe581cbef8d51c85926fa0e8a3d7f9098`  
-Latest known preview: https://microdrama-studio-p7buxrcyj-nfyns-projects-b0cc0f41.vercel.app  
-Preview state when this handoff was written: **READY** (Vercel deployment `dpl_DhVy712P5b2MGHCUB34N9oVXjeWy`).
+Latest known branch commit: `8071d8c66ad8d0a82235762053c24e664e765911`  
+Latest known preview: https://microdrama-studio-8h29q26y8-nfyns-projects-b0cc0f41.vercel.app  
+Preview state when this handoff was written: **READY**. GitHub Actions CI for this head was **in progress** at handoff refresh; check the PR checks for its final result. (Vercel deployment `dpl_3SeyLjQbFdScp14hoc9Sznb8h9DA`).
 
 ## Mission
 
