@@ -14,8 +14,8 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - [ ] Run and verify GitHub Actions on the current feature branch head; resolve genuine lint/build/E2E failures without weakening checks.
 - [ ] Add E2E coverage for streaming discovery, genre/search filters, favorites persistence, opening a series, episode selection, Escape dismissal and mobile navigation.
 - [ ] Add E2E coverage for Studio-to-streaming local publishing, including rejection when any episode is not approved or release QA fails.
-- [ ] Harden player lifecycle: release object URLs and IndexedDB connections on every path; handle missing files, corrupt blobs, unsupported codecs, media errors and subtitle parse errors visibly.
-- [ ] Add reliable resume/continue-watching state (series + episode + playback position) with versioned local storage and safe migration; never overwrite watchlist or Studio keys.
+- [x] Harden player lifecycle: release object URLs and IndexedDB connections on cleanup/failure; handle missing files, blocked storage, unsupported codecs and subtitle loading errors visibly. Keep E2E coverage as the remaining verification gate.
+- [x] Add local resume/continue-watching state (series + episode + playback position) using the separate `microdrama-watch-progress-v1` key and 5-second checkpoints. E2E coverage and migration tests remain open.
 - [ ] Verify modal focus management, focus return, keyboard navigation, screen-reader labels, contrast and reduced-motion behavior.
 - [ ] Add a mobile viewport E2E project and verify fixed navigation/safe-area spacing, modal scrolling and player dimensions.
 - [ ] Test backup export/restore compatibility and clearly warn that media blobs are not included.
@@ -23,7 +23,7 @@ This roadmap distinguishes the current local-first prototype from the work requi
 
 ## P1 — Improve consumer streaming experience
 
-- [ ] Add continue-watching row using real saved progress, not placeholder percentages.
+- [x] Add continue-watching row using real saved progress, not placeholder percentages.
 - [ ] Add next/previous episode navigation and end-of-episode continuation with a user-controlled countdown.
 - [ ] Improve player controls and error recovery while keeping browser-native media playback where practical.
 - [ ] Add series synopsis, episode metadata, progress indicators and accurate availability states.
@@ -67,5 +67,7 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - [x] Mobile bottom navigation.
 - [x] Episode list in series detail view.
 - [x] Modal dialog semantics and Escape-key dismissal.
-- [ ] Latest commit's GitHub Actions result independently verified.
+- [x] Local player lifecycle hardening and media error fallback.
+- [x] Local continue-watching checkpoints and resume row.
+- [ ] Latest commit's GitHub Actions result independently verified (run #300/#301 pending at snapshot).
 - [ ] Latest feature preview smoke-tested on a real mobile device.
