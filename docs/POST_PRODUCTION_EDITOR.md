@@ -11,12 +11,12 @@ The editor at `/studio/post-production` creates an episode-level edit decision l
 - Preview selected video and audio files from the existing IndexedDB media store.
 - Assign a local audio asset and a structurally validated SRT/WebVTT subtitle asset to the episode.
 - Save the current edit automatically and create named snapshots that can be restored.
-- Export a portable JSON EDL containing scene order, planned durations, linked asset IDs and audio/subtitle references.
+- Export a downloadable JSON EDL containing scene order, planned durations, linked asset IDs and audio/subtitle references.
 - Keep each episode's edit and snapshot history under separate localStorage keys.
 
 ## Persistence and safety
 
-The editor stores edit decisions in localStorage, exports a portable EDL JSON for external processing, and reads media blobs from the existing `microdrama-media-v1` IndexedDB database. It does not duplicate or upload source media. The edit plan is specific to the browser profile and can be lost if browser storage is cleared or evicted. It is not a backup or a shared team workspace.
+The editor stores edit decisions in localStorage, exports a JSON EDL that references browser-local asset IDs, and reads media blobs from the existing `microdrama-media-v1` IndexedDB database. It does not duplicate or upload source media. The edit plan is specific to the browser profile and can be lost if browser storage is cleared or evicted. It is not a backup or a shared team workspace.
 
 The editor guards episode changes so an edit loaded for one episode cannot be autosaved over another episode's key. Source files are previews only; changing scene duration or order does not modify the underlying media.
 
