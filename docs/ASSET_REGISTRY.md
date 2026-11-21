@@ -37,10 +37,10 @@ Manual checks for story continuity, vertical framing, audio, and subtitles remai
 - Data is stored in the current browser's localStorage and is not synchronized.
 - Local IndexedDB storage is browser/device-specific and subject to browser quota, eviction, and private-mode limitations. It is not a backup or durable cloud store.
 - No server upload, CDN delivery, transcoding, codec/FPS/audio-track probing, waveform, subtitle timing alignment, subtitle rendering QA, or checksum generation for large files.
-- No automatic codec/FPS/audio-track probing, transcoding, waveform, subtitle timing alignment, subtitle rendering QA, or checksum generation.
+- No automatic codec/FPS/audio-track probing, transcoding, waveform, subtitle timing alignment, or subtitle rendering QA.
 - No immutable audit log; browser storage can be edited or cleared.
 - Do not use the local catalog as a public distribution or paid streaming service.
 
 ## Next production milestone
 
-Implement actual file ingestion and durable object storage, then add server-side media probing, checksum calculation, subtitle validation, and a versioned audit trail before enabling real playback or public distribution.
+Implement durable object storage, server-side media probing, streaming delivery, large-file checksum verification, and a versioned audit trail before enabling real playback or public distribution.
