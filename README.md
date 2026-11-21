@@ -43,6 +43,10 @@ See [the local-first production workflow](docs/LOCAL_FIRST_WORKFLOW.md) for the 
 
 See [the secure local Gemini setup guide](docs/LOCAL_GEMINI_SETUP.md).
 
+## Production readiness
+
+See [the production launch checklist](docs/GO_LIVE_CHECKLIST.md) for the implemented local capabilities and the explicit blockers before public launch.
+
 ## Stack
 
 Next.js 16, React 19.2, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
