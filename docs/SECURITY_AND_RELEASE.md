@@ -21,7 +21,10 @@
 - [ ] Use a transactional server-side ledger for wallet credit/debit.
 - [ ] Prevent episode publication without a valid owner approval.
 - [ ] Add moderation, rights, privacy and content takedown workflows.
-- [ ] Configure durable media backups, monitoring, error reporting and persistent rate limits.\n- [ ] Implement a real media render pipeline, immutable rendered outputs and automated playback/output-integrity tests.\n- [ ] Configure public streaming/CDN delivery only after signed access and takedown controls are in place.
-- [ ] Run dependency audit and remediate reported vulnerabilities.\n- [ ] Run typecheck, lint, production build and end-to-end tests before launch.
+- [ ] Configure durable media backups, monitoring, error reporting and persistent rate limits.
+- [ ] Implement a real media render pipeline, immutable rendered outputs and automated playback/output-integrity tests.
+- [ ] Configure public streaming/CDN delivery only after signed access and takedown controls are in place.
+- [ ] Run dependency audit and remediate reported vulnerabilities.
+- [ ] Run typecheck, lint, production build and end-to-end tests before launch.
 
 The local-first workflow is usable for same-browser production planning and local playback. It is not a production-ready public service. Do not deploy with real users or payments until the remaining checklist is completed.
