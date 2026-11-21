@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowDown, ArrowUp, Clock3, Film, Music2, Plus, Save, Subtitles, Trash2, History, RotateCcw, Download } from "lucide-react";
+import { ArrowLeft, ArrowDown, ArrowUp, Clock3, Film, Music2, Plus, Save, Subtitles, Trash2, History, RotateCcw, Download, Clapperboard } from "lucide-react";
+import { renderEpisodeWebm } from "@/lib/local-renderer";
 
 type Episode={id:string;title:string;number:number;scenes:string[]};
 type Series={id:string;title:string;episodes:Episode[]};
@@ -14,6 +15,10 @@ const SERIES_KEY="microdrama-studio-local-v1",ASSETS_KEY="microdrama-assets-v1";
 const editKey=(id:string)=>"microdrama-edit-timeline-v1:"+id;
 const snapshotKey=(id:string)=>"microdrama-edit-snapshots-v1:"+id;
 const makeId=()=>crypto.randomUUID();
+function openMediaDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const request=indexedDB.open("microdrama-media-v1",1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains("files"))request.result.createObjectStore("files",{keyPath:"id"});};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+async function readMediaFile(id:string):Promise<File|null>{const db=await openMediaDB();try{return await new Promise((resolve,reject)=>{const request=db.transaction("files","readonly").objectStore("files").get(id);request.onsuccess=()=>resolve(request.result?.file??null);request.onerror=()=>reject(request.error);});}finally{db.close();}}
+async function storeMediaFile(id:string,file:File){const db=await openMediaDB();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").put({id,file});tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}finally{db.close();}}
+
 const fmt=(n:number)=>{const s=Math.max(0,Math.round(n));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");};
 const fresh=(ep:Episode):Edit=>({scenes:(ep.scenes||[]).map(title=>({id:makeId(),title,durationSeconds:8,sourceInSeconds:0,sourceOutSeconds:8,videoAssetId:""})),audioAssetId:"",subtitleAssetId:""});
 function normalizeEdit(value:unknown,episode:Episode):Edit{const parsed=value&&typeof value==="object"?value as Partial<Edit>:{};if(!Array.isArray(parsed.scenes))return fresh(episode);return {scenes:parsed.scenes.map(raw=>{const scene=raw as Partial<Scene>;const sourceIn=Math.max(0,Number(scene.sourceInSeconds)||0);const sourceOut=Math.max(sourceIn+0.1,Number(scene.sourceOutSeconds)||Number(scene.durationSeconds)||8);return {id:scene.id||makeId(),title:scene.title||"Escena",sourceInSeconds:sourceIn,sourceOutSeconds:sourceOut,durationSeconds:Number((sourceOut-sourceIn).toFixed(3)),videoAssetId:scene.videoAssetId||""};}),audioAssetId:typeof parsed.audioAssetId==="string"?parsed.audioAssetId:"",subtitleAssetId:typeof parsed.subtitleAssetId==="string"?parsed.subtitleAssetId:""};}
