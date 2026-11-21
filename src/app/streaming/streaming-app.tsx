@@ -65,8 +65,8 @@ export default function StreamingApp(){
       const subtitleFile=await getFile(subtitle.fileId);
       if(subtitleFile){
        let text=await subtitleFile.text();
-       text=text.replace(/^\\uFEFF/,"").replace(/(\\d{2}:)?\\d{2}:\\d{2},(\\d{3})/g,match=>match.replace(",","."));
-       if(!text.trimStart().startsWith("WEBVTT"))text="WEBVTT\\n\\n"+text;
+       text=text.replace(/^\uFEFF/,"").replace(/(\d{2}:)?\d{2}:\d{2},(\d{3})/g,match=>match.replace(",","."));
+       if(!text.trimStart().startsWith("WEBVTT"))text="WEBVTT\n\n"+text;
        subtitleObjectUrl=URL.createObjectURL(new Blob([text],{type:"text/vtt"}));
        if(!cancelled){setSubtitleUrl(subtitleObjectUrl);setSubtitleLanguage(subtitle.language||"es");}
        else{URL.revokeObjectURL(subtitleObjectUrl);subtitleObjectUrl="";}
