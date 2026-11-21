@@ -139,9 +139,15 @@ export default function AssetRegistry(){
   setRights("Pendiente");setEpisodeId("");setSubtitleReport(null);setSubtitleLanguage("es");setNotice("Activo y metadatos técnicos registrados en este navegador.");
  }
  async function handleFileSelected(file:File|null){
-  setSelectedFile(file);
+  setSelectedFile(file);setSubtitleReport(null);
   if(!file)return;
   setProbing(true);
+  if(kind==="Documento"&&/\.(srt|vtt)$/i.test(file.name)){
+   try{const report=parseSubtitleFile(await file.text(),file.name);setSubtitleReport({...report,language:subtitleLanguage});setNotice(report.errors.length?("Subtítulos detectados con "+report.errors.length+" incidencias."):(report.cueCount+" cues de subtítulos validados localmente."));}
+   catch{setNotice("No se pudo leer el archivo de subtítulos.");}
+   finally{setProbing(false);}
+   return;
+  }
   try{const metadata=await probeMediaMetadata(file,kind);if(metadata.width)setWidth(String(metadata.width));if(metadata.height)setHeight(String(metadata.height));if(metadata.durationSeconds)setDuration(String(metadata.durationSeconds));setNotice("Metadatos básicos extraídos del archivo seleccionado. FPS y códec deben confirmarse manualmente.");}
   catch{setNotice("Archivo seleccionado. No se pudieron extraer sus metadatos automáticamente.");}
   finally{setProbing(false);}
