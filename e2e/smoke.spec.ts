@@ -13,6 +13,25 @@ test("Studio exposes local workspace and production navigation", async ({ page }
   await expect(page.getByRole("link", { name: /Post Production/ })).toBeVisible();
 });
 
+test("Studio tolerates legacy series records without optional genre metadata", async ({ page }) => {
+  await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "legacy-series",
+      title: "Legacy Series",
+      logline: "A record created by an earlier version",
+      status: "Desarrollo",
+      episodes: [],
+      characters: [],
+    }]));
+  });
+  await page.reload();
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
+  await expect(page.getByText("Legacy Series")).toBeVisible();
+  await expect(page.getByText("SIN GÉNERO")).toBeVisible();
+});
+
 test("asset registry and post-production routes render", async ({ page }) => {
   await page.goto("/studio/assets");
   await expect(page.getByRole("heading", { name: /Media Asset Registry/ })).toBeVisible();
