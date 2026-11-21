@@ -1,6 +1,6 @@
 # Asset Registry & Master Delivery
 
-The Asset Registry is a browser-local production inventory. It does not upload, inspect, transcode, or host media files.
+The Asset Registry is a browser-local production inventory. Media files can be imported into IndexedDB in the current browser profile and previewed locally. Files are not uploaded to a server, synchronized, transcoded, or hosted publicly.
 
 ## Asset identity and versions
 
@@ -24,18 +24,19 @@ The local registry supports manually entered:
 - Subtitle-track count
 - SHA-256 checksum
 
-These fields are declarations entered by the operator. The app does not probe media containers or calculate checksums. The release gate checks the declared video-master metadata; it does not verify the underlying file.
+These fields are declarations entered by the operator. The app does not yet probe media containers, extract codec/track metadata, or calculate checksums. The release gate checks the declared video-master metadata; it does not verify the underlying file.
 
 ## Release QA behavior
 
-The release gate evaluates only current asset versions linked to a series. At least one current linked asset must exist, and every such asset must have rights marked `Confirmado`. At least one current video asset must also declare width, height, frame rate, duration, and codec, with a portrait 9:16 aspect ratio (within a small tolerance). Archived versions do not block the current release gate.
+The release gate evaluates only current asset versions linked to a series. For a video master, it requires a locally attached file plus manually declared dimensions, frame rate, duration, codec, and portrait 9:16 aspect ratio. At least one current linked asset must exist, and every such asset must have rights marked `Confirmado`. At least one current video asset must also declare width, height, frame rate, duration, and codec, with a portrait 9:16 aspect ratio (within a small tolerance). Archived versions do not block the current release gate.
 
 Manual checks for story continuity, vertical framing, audio, and subtitles remain operator attestations. A green local gate is not a legal opinion, technical certification, or proof that a remote media URL works.
 
 ## Current limitations
 
 - Data is stored in the current browser's localStorage and is not synchronized.
-- File upload and durable media storage are not implemented.
+- Local IndexedDB storage is browser/device-specific and subject to browser quota, eviction, and private-mode limitations. It is not a backup or durable cloud store.
+- No server upload, CDN delivery, transcoding, automatic media probing, waveform, subtitle parsing, or checksum generation.
 - No automatic media probing, transcoding, waveform, subtitle parsing, or checksum generation.
 - No immutable audit log; browser storage can be edited or cleared.
 - Do not use the local catalog as a public distribution or paid streaming service.
