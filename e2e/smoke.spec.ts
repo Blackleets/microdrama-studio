@@ -50,8 +50,10 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: seriesId,
       title: "Render Test",
-      episodes: [{ id: episodeId, title: "Test Episode", number: 1, scenes: ["Scene"], synopsis: "", script: "", status: "Borrador" }],
+      status: "Publicado",
+      episodes: [{ id: episodeId, title: "Test Episode", number: 1, scenes: ["Scene"], synopsis: "", script: "", status: "Aprobado" }],
     }]));
+    localStorage.setItem("microdrama-release-qa-v1:" + seriesId, JSON.stringify([true, true, true]));
 
     const canvas = document.createElement("canvas");
     canvas.width = 320;
@@ -189,6 +191,9 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   });
   expect(renderedMaster).toBeTruthy();
   expect(renderedMaster.rights).toBe("Pendiente");
+  const releaseState = await page.evaluate(() => ({ qa: JSON.parse(localStorage.getItem("microdrama-release-qa-v1:render-series") || "[]"), series: JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]").find((item: { id: string }) => item.id === "render-series") }));
+  expect(releaseState.qa).toEqual([false, false, false]);
+  expect(releaseState.series.status).toBe("Desarrollo");
   expect(renderedMaster.mimeType).toContain("video/webm");
   expect(renderedMaster.width).toBe(720);
   expect(renderedMaster.height).toBe(1280);
