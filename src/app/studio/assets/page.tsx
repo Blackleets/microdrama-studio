@@ -8,7 +8,8 @@ type AssetKind = "Vídeo" | "Imagen" | "Audio" | "Documento";
 type Rights = "Pendiente" | "Confirmado" | "Restringido";
 type EpisodeOption = { id:string; title:string; number:number };
 type SeriesOption = { id:string; title:string; episodes?:EpisodeOption[] };
-type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string;
+type SubtitleReport={format:"SRT"|"VTT";cueCount:number;errors:string[];language:string};
+type Asset = { fileId?:string; fileName?:string; fileSize?:number; mimeType?:string; subtitleFormat?:"SRT"|"VTT";subtitleCueCount?:number;subtitleLanguage?:string;subtitleValidation?:"Válido"|"Con errores";
 
  id:string; logicalId:string; seriesId:string; seriesTitle:string; episodeId?:string; episodeTitle?:string;
  title:string; kind:AssetKind; source:string; url:string; rights:Rights; license:string;
@@ -19,6 +20,31 @@ const KEY="microdrama-assets-v1";
 const kinds:AssetKind[]=["Vídeo","Imagen","Audio","Documento"];
 const iconFor=(kind:AssetKind)=>kind==="Vídeo"?FileVideo:kind==="Audio"?FileAudio:kind==="Documento"?FileText:FileImage;
 const asNumber=(value:string)=>value.trim()===""?undefined:Number(value);
+function parseSubtitleFile(text:string,name:string):Omit<SubtitleReport,"language">{
+ const format=name.toLowerCase().endsWith(".vtt")?"VTT":"SRT";
+ const errors:string[]=[];
+ const normalized=text.replace(/^\\uFEFF/,"").replace(/\\r/g,"").trim();
+ if(format==="VTT"&&!normalized.startsWith("WEBVTT"))errors.push("Falta la cabecera WEBVTT.");
+ const blocks=normalized.split(/\\n\\s*\\n/).filter(Boolean);
+ const timePattern=/(\\d{2}:)?\\d{2}:\\d{2}[.,]\\d{3}\\s+-->\\s+(\\d{2}:)?\\d{2}:\\d{2}[.,]\\d{3}/;
+ const timestamp=(value:string)=>{const v=value.trim().replace(",",".");const parts=v.split(":");const sec=Number(parts.pop());const min=Number(parts.pop());const hour=parts.length?Number(parts.pop()):0;return hour*3600+min*60+sec;};
+ let cueCount=0;let previousStart=-1;
+ for(const block of blocks){
+  if(format==="VTT"&&/^(WEBVTT|NOTE|STYLE|REGION)(\\s|$)/.test(block))continue;
+  const lines=block.split("\\n").map(x=>x.trim()).filter(Boolean);
+  const index=lines.findIndex(line=>timePattern.test(line));
+  if(index<0)continue;
+  cueCount++;
+  const times=lines[index].split("-->");
+  const start=timestamp(times[0]);const end=timestamp(times[1].split(/\\s+/)[0]);
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)errors.push("Cue "+cueCount+": intervalo de tiempo inválido.");
+  if(start<previousStart)errors.push("Cue "+cueCount+": los tiempos no están ordenados.");
+  if(start>=previousStart)previousStart=start;
+  if(!lines.slice(index+1).join(" ").trim())errors.push("Cue "+cueCount+": texto vacío.");
+ }
+ if(cueCount===0)errors.push("No se encontraron bloques de subtítulos con marcas de tiempo.");
+ return {format,cueCount,errors};
+}
 const DB_NAME="microdrama-media-v1";
 function openMediaDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const request=indexedDB.open(DB_NAME,1);request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains("files"))request.result.createObjectStore("files",{keyPath:"id"});};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
 async function saveMediaFile(id:string,file:File){const db=await openMediaDB();await new Promise<void>((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").put({id,file});tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});db.close();}
