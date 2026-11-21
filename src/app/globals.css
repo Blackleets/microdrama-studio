@@ -133,3 +133,26 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .detail-art{background-size:cover;background-position:center 28%;background-repeat:no-repeat}
 .detail-art>span{display:block;padding:30px 28px;font-size:clamp(2.2rem,7vw,4.5rem);font-weight:900;letter-spacing:-.08em;line-height:.86;max-width:80%;mix-blend-mode:screen}
 @media(max-width:700px){.stream-hero{background-position:62% center}.stream-hero-art{background-position:center 26%;opacity:.65}.show-poster{background-position:center 25%!important}}
+
+
+/* Mobile-first navigation and richer series detail interactions. */
+.stream-mobile-nav{display:none}
+.detail-episode-list{display:grid;gap:7px}
+.detail-episode-list button{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:1px solid #ffffff16;border-radius:9px;background:#0b0e14;color:#dce1e8;text-align:left;font-size:11px;transition:border-color 180ms ease,background 180ms ease,transform 180ms ease}
+.detail-episode-list button:hover{border-color:#d6ff6355;background:#d6ff630a;transform:translateX(2px)}
+.detail-episode-list button span:first-child{color:#d6ff63;font-variant-numeric:tabular-nums}
+.detail-episode-list button span:nth-child(2){flex:1}
+.detail-episode-list button svg{color:#d6ff63}
+@media(max-width:600px){
+ .stream-mobile-nav{position:fixed;display:grid;grid-template-columns:repeat(4,1fr);left:0;right:0;bottom:0;z-index:30;padding:8px 8px max(8px,env(safe-area-inset-bottom));background:#090b10f2;border-top:1px solid #ffffff18;backdrop-filter:blur(18px)}
+ .stream-mobile-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:42px;color:#778292;font-size:9px;transition:color 180ms ease}
+ .stream-mobile-nav button.active{color:#d6ff63}
+ .stream-mobile-nav button svg{width:17px;height:17px}
+ .stream-content{padding-bottom:88px}
+ .stream-footer{padding-bottom:24px}
+ .detail-copy{padding-bottom:30px}
+ .stream-modal-backdrop{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){
+ .detail-episode-list button{transition:none}
+}
