@@ -42,7 +42,6 @@ function parseCaptions(text: string): CaptionCue[] {
     const lines = block.split("\n");
     const index = lines.findIndex(line => /((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})\s*-->\s*((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})/.test(line));
     if (index < 0) continue;
-    const match = lines[index].match(/((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})\s*-->\s*((?:\d{2}:)?\d{2}:\d{2}[.,]\]\d{3})/);
     const timeMatch = lines[index].match(/((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})\s*-->\s*((?:\d{2}:)?\d{2}:\d{2}[.,]\d{3})/);
     if (!timeMatch) continue;
     const start = parseTime(timeMatch[1]);
