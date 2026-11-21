@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, CircleAlert, FileImage, FileVideo, FileAudio, FileText, Plus, ShieldCheck, Trash2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Check, FileImage, FileVideo, FileAudio, FileText, Plus, ShieldCheck, Trash2, ExternalLink } from "lucide-react";
 
 type AssetKind = "Vídeo" | "Imagen" | "Audio" | "Documento";
 type Rights = "Pendiente" | "Confirmado" | "Restringido";
