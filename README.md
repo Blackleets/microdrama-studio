@@ -22,7 +22,7 @@ The product runs in **local-first mode** so development can continue before the 
 - Published Studio series are read from the same browser's local Studio data and shown in the streaming catalog after editorial approval.
 - The streaming player can play approved episode masters stored in this browser profile via IndexedDB and attach validated local SRT/WebVTT captions when available. Catalog-only/demo titles without a local master are clearly marked as unavailable. This is local playback, not public CDN delivery.
 - Post-production edits are local EDL data: the editor previews original files but does not trim, mix, transcode or render a finished episode.
-- Script structure preparation remains available locally; external AI generation requires a configured and verified provider key/model.
+- Script structure preparation remains available locally. Optional Gemini script generation works without Supabase when the server has `GEMINI_API_KEY`, an explicitly selected `GEMINI_MODEL` and `LOCAL_STUDIO_AI_TOKEN`; the Google key remains server-side.
 - Local data is specific to the current browser/device. It is not backed up or synchronized across devices.
 
 ## End-to-end local workflow
