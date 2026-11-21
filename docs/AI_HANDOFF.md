@@ -5,9 +5,9 @@ Repository: `Blackleets/microdrama-studio`
 Active working branch: `feat/streaming-cinematic-motion`  
 Base branch: `main` (do not push directly)  
 Open draft PR: https://github.com/Blackleets/microdrama-studio/pull/1  
-Latest branch head at handoff refresh: `f0e780d2134c1b301f33788769c280af3570afa4`  
+Current branch head: always fetch `feat/streaming-cinematic-motion` from GitHub; do not assume a hard-coded SHA is current.  
 Latest verified preview (previous head `b0a0d8c3ed43b8551ecd6463a786fc5af502af97`): https://microdrama-studio-xgul3ctnn-nfyns-projects-b0cc0f41.vercel.app (**READY**). A new preview should be generated for the current head; verify its commit SHA and READY state before sharing it.  
-CI for previous head `b0a0d8c3ed43b8551ecd6463a786fc5af502af97`: lint and build passed; browser smoke tests failed (9 passed, 4 failed). The failure causes were corrected in `f0e780d2134c1b301f33788769c280af3570afa4`; verify CI for this new head before treating it as green.
+CI run #296 (`0d06e6c`) passed dependency audit, lint and production build but failed four browser tests. The next patch added stable test IDs for the actual upload controls and fixed the SRT fixture. CI run #300 is checking that correction; run #301 checks the subsequent player/progress work. Treat the branch as unverified until the latest run finishes green.
 
 ## Mission
 
@@ -36,6 +36,8 @@ The product should feel like a premium streaming startup, not a generic admin da
 - Next.js 16 / React 19 / TypeScript / Tailwind CSS 4 / lucide-react.
 - `/` redirects to `/streaming`; `/streaming` is the consumer app; `/studio` is the local-first production workspace.
 - Streaming includes editorial hero, four original SVG demo artworks, catalog cards, genre/search filters, favorites/watchlist, series detail modal, episode selection and a vertical player.
+- Player lifecycle now closes IndexedDB connections in `finally`, releases object URLs on cleanup, handles blocked/missing local media and reports unsupported video decoding; subtitle failures are separated from video playback failures.
+- Continue-watching is implemented with versioned localStorage key `microdrama-watch-progress-v1`, 5-second checkpoints, episode/time resume and a consumer row. It is device/browser-profile local; no cross-device sync.
 - Mobile bottom navigation and detail-page episode list are implemented on the active branch.
 - Detail/player modal has dialog semantics and Escape-key dismissal.
 - Studio stores working data in browser localStorage; imported media blobs are in IndexedDB.
@@ -95,7 +97,7 @@ A feature is not done because the UI looks finished. It must:
 
 - Local data belongs to one browser profile/device. Clearing browser data or losing the device can remove the only copy.
 - JSON backup does not include media blobs stored in IndexedDB.
-- The player cannot access local media imported in a different browser profile/device.
+- The player cannot access local media imported in a different browser profile/device. Continue-watching progress is local to the same browser profile and currently has no cross-device sync.
 - Public streaming/CDN, adaptive bitrate, signed playback and server-side media processing are not built.
 - The browser renderer currently exports WebM with hard cuts, not MP4 or transitions.
 - AI media generation providers are not wired into production workflows.
