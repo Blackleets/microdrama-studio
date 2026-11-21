@@ -23,7 +23,7 @@ The product runs in **local-first mode** so development can continue before the 
 - Post-production edits are local EDL data: the editor previews original files but does not trim, mix, transcode or render a finished episode.\n- Script structure preparation remains available locally; external AI generation requires a configured and verified provider key/model.
 - Local data is specific to the current browser/device. It is not backed up or synchronized across devices.
 
-## Stack
+## End-to-end local workflow\n\nSee [the local-first production workflow](docs/LOCAL_FIRST_WORKFLOW.md) for the full path from series creation and asset import through QA, local publishing and browser playback.\n\n## Stack
 
 Next.js 15, React 19, TypeScript, Tailwind CSS 4 and lucide-react. Supabase Auth, Postgres and Storage remain the planned backend. Provider integrations will sit behind adapters so image, video, voice and language-model vendors can be replaced without rewriting product workflows.
 
