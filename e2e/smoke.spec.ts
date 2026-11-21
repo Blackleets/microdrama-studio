@@ -296,6 +296,8 @@ test("local backup restore validates the format and replaces workspace metadata"
       characters: [],
       status: "Desarrollo",
     }]));
+    localStorage.setItem("microdrama-release-qa-v1:stale-series", JSON.stringify([true, true, true]));
+    localStorage.setItem("microdrama-edit-timeline-v1:stale-episode", JSON.stringify({ scenes: [] }));
   });
   await page.reload();
   const backup = {
@@ -331,6 +333,11 @@ test("local backup restore validates the format and replaces workspace metadata"
   expect(restored.series[0].id).toBe("restored-series");
   expect(restored.series[0].episodes[0].id).toBe("restored-episode");
   expect(restored.watchlist).toEqual(["restored-series"]);
+  const staleKeys = await page.evaluate(() => ({
+    qa: localStorage.getItem("microdrama-release-qa-v1:stale-series"),
+    timeline: localStorage.getItem("microdrama-edit-timeline-v1:stale-episode"),
+  }));
+  expect(staleKeys).toEqual({ qa: null, timeline: null });
 });
 
 test("invalid local backup does not overwrite existing workspace", async ({ page }) => {
@@ -353,4 +360,49 @@ test("invalid local backup does not overwrite existing workspace", async ({ page
   await expect(page.getByText(/no pertenece a una versión compatible/)).toBeVisible();
   const current = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]"));
   expect(current[0].id).toBe("keep-series");
+});
+
+
+test("malformed local backup metadata is rejected without modifying workspace", async ({ page }) => {
+  await page.goto("/studio");
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "safe-series",
+      title: "Safe Series",
+      logline: "",
+      genre: "Drama",
+      style: "Vertical",
+      status: "Desarrollo",
+      updatedAt: new Date().toISOString(),
+      characters: [],
+      episodes: [],
+      bible: "",
+    }]));
+  });
+  await page.reload();
+  const malformed = {
+    format: "microdrama-local-backup",
+    schemaVersion: 1,
+    series: [{
+      id: "bad-series",
+      title: "Bad Series",
+      logline: "",
+      genre: "Drama",
+      style: "Vertical",
+      status: "Desarrollo",
+      updatedAt: new Date().toISOString(),
+      characters: [],
+      episodes: [],
+      bible: "",
+    }],
+    localData: { "microdrama-release-qa-v1:bad-series": [true, "yes", false] },
+  };
+  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+    name: "malformed-backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(malformed)),
+  });
+  await expect(page.getByText(/lista de QA no válida/)).toBeVisible();
+  const current = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]"));
+  expect(current[0].id).toBe("safe-series");
 });
