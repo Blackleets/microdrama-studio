@@ -16,7 +16,7 @@ AI-assisted production workspace for vertical micro-series, paired with a mobile
 The product runs in **local-first mode** so development can continue before the Supabase project is available.
 
 - Studio data (series, story bibles, characters, episodes, scripts and storyboard notes) is saved in browser localStorage.
-- Asset metadata is saved in localStorage; imported media files are stored in IndexedDB in the current browser profile. Every episode must have its own current video master, a local file, and completed technical metadata to pass the local release gate. Basic dimensions/duration are read from browser media metadata when available.
+- Asset metadata is saved in localStorage; imported media files are stored in IndexedDB in the current browser profile. Every episode must have its own current vertical video master with an audio track, plus a locally attached SRT/WebVTT subtitle file that passes structural validation, to pass the local release gate. Basic dimensions/duration are read from browser media metadata when available.
 - Streaming watchlist is saved in browser localStorage.
 - Published Studio series are read from the same browser's local Studio data and shown in the streaming catalog after editorial approval.
 - The streaming player is a UI shell. It clearly marks video as not connected; it does not pretend to play media.
