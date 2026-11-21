@@ -52,6 +52,7 @@ function openMediaDB():Promise<IDBDatabase>{return new Promise((resolve,reject)=
 async function saveMediaFile(id:string,file:File){const db=await openMediaDB();await new Promise<void>((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").put({id,file});tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});db.close();}
 async function getMediaFile(id:string):Promise<File|null>{const db=await openMediaDB();const result=await new Promise<File|null>((resolve,reject)=>{const request=db.transaction("files","readonly").objectStore("files").get(id);request.onsuccess=()=>resolve(request.result?.file??null);request.onerror=()=>reject(request.error);});db.close();return result;}
 async function removeMediaFile(id:string){const db=await openMediaDB();await new Promise<void>((resolve,reject)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").delete(id);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});db.close();}
+async function sha256File(file:File):Promise<string|undefined>{try{const digest=await crypto.subtle.digest("SHA-256",await file.arrayBuffer());return Array.from(new Uint8Array(digest)).map(byte=>byte.toString(16).padStart(2,"0")).join("");}catch{return undefined;}}
 async function probeMediaMetadata(file:File,kind:AssetKind):Promise<{width?:number;height?:number;durationSeconds?:number}>{
  const src=URL.createObjectURL(file);
  try{
@@ -129,17 +130,19 @@ export default function AssetRegistry(){
   const numericVersion=Number(version.replace(/[^0-9]/g,""))||1;
   const fileId=selectedFile?crypto.randomUUID():undefined;
   try{if(selectedFile&&fileId)await saveMediaFile(fileId,selectedFile);}catch{setSaving(false);setNotice("No se pudo guardar el archivo en el almacenamiento local del navegador.");return;}
+  const generatedChecksum=!checksum.trim()&&selectedFile&&selectedFile.size<=50*1024*1024?await sha256File(selectedFile):undefined;
+  const finalChecksum=checksum.trim()||generatedChecksum;
   const item:Asset={
    id:crypto.randomUUID(),logicalId:crypto.randomUUID(),...(fileId?{fileId,fileName:selectedFile?.name,fileSize:selectedFile?.size,mimeType:selectedFile?.type}:{}),seriesId:selectedSeries.id,seriesTitle:selectedSeries.title,
    ...(episode?{episodeId:episode.id,episodeTitle:"EP"+String(episode.number).padStart(2,"0")+" · "+episode.title}:{}),
    title:title.trim(),kind,source,url:url.trim(),rights,license:license.trim(),version:version.trim()||"v1",
    versionNumber:numericVersion,versionStatus:"Actual",notes:notes.trim(),createdAt:new Date().toISOString(),
    width:asNumber(width),height:asNumber(height),fps:asNumber(fps),durationSeconds:asNumber(duration),codec:codec.trim()||undefined,
-   audioTracks:asNumber(audioTracks),subtitleTracks:asNumber(subtitleTracks),...(subtitleReport?{subtitleFormat:subtitleReport.format,subtitleCueCount:subtitleReport.cueCount,subtitleLanguage:subtitleLanguage.trim()||"und",subtitleValidation:subtitleReport.errors.length?"Con errores" as const:"Válido" as const}:{}),checksum:checksum.trim()||undefined
+   audioTracks:asNumber(audioTracks),subtitleTracks:asNumber(subtitleTracks),...(subtitleReport?{subtitleFormat:subtitleReport.format,subtitleCueCount:subtitleReport.cueCount,subtitleLanguage:subtitleLanguage.trim()||"und",subtitleValidation:subtitleReport.errors.length?"Con errores" as const:"Válido" as const}:{}),checksum:finalChecksum||undefined
   };
   setAssets(p=>[item,...p]);setTitle("");setUrl("");setSelectedFile(null);setLicense("");setVersion("v1");setNotes("");setSaving(false);
   setWidth("");setHeight("");setFps("");setDuration("");setCodec("");setAudioTracks("");setSubtitleTracks("");setChecksum("");
-  setRights("Pendiente");setEpisodeId("");setSubtitleReport(null);setSubtitleLanguage("es");setNotice("Activo y metadatos técnicos registrados en este navegador.");
+  setRights("Pendiente");setEpisodeId("");setSubtitleReport(null);setSubtitleLanguage("es");setNotice(generatedChecksum?"Activo guardado. SHA-256 calculado automáticamente.":"Activo y metadatos técnicos registrados en este navegador.");
  }
  async function handleFileSelected(file:File|null){
   setSelectedFile(file);setSubtitleReport(null);
