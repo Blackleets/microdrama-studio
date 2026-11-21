@@ -4,7 +4,7 @@
 
 - [x] Browser-local Studio for series, story bibles, characters, episodes, scripts and storyboard notes.
 - [x] Browser-local media registry with IndexedDB files, asset versions, rights metadata and subtitle structure checks.
-- [x] Episode EDL editor with source in/out points, asset previews, snapshots and JSON export.
+- [x] Episode EDL editor with source in/out points, asset previews, snapshots, JSON export and browser-local WebM rendering with optional soundtrack mix and burned-in captions.
 - [x] Same-browser playback of approved local episode masters with validated subtitle tracks.
 - [x] Local release QA gate and explicit owner publication to the browser-local catalog.
 - [x] Optional Gemini script-generation endpoint guarded by a separate server-side token; this is not a substitute for production owner authentication.
@@ -25,6 +25,7 @@
 - [ ] Implement production MP4/server-side rendering, transitions, immutable outputs, codec validation and output-integrity tests; the current browser renderer exports WebM only.
 - [ ] Configure public streaming/CDN delivery only after signed access and takedown controls are in place.
 - [x] Run dependency audit and remediate reported vulnerabilities (current CI audit: no reported vulnerabilities).
-- [x] Run ESLint and production build in GitHub Actions; Next.js build performs TypeScript validation.\n- [x] Add and run Playwright Chromium smoke tests for streaming, Studio, asset registry, post-production, protected Gemini endpoint, mobile viewport and actual local WebM render/master registration, QA invalidation and playback through the Streaming App.
+- [x] Run ESLint and production build in GitHub Actions; Next.js build performs TypeScript validation.
+- [x] Add and run Playwright Chromium smoke tests for streaming, Studio, asset registry, post-production, protected Gemini endpoint, mobile viewport and actual local WebM render/master registration, QA invalidation and playback through the Streaming App.
 
 The local-first workflow is usable for same-browser production planning and local playback. It is not a production-ready public service. Do not deploy with real users or payments until the remaining checklist is completed.
