@@ -6,7 +6,7 @@ The editor at `/studio/post-production` creates an episode-level edit decision l
 
 - Select a series and episode from the local Studio workspace.
 - Create, rename, remove and reorder scenes.
-- Set a planned duration per scene and calculate cumulative timecodes.
+- Set source in/out points per scene, calculate clip durations and cumulative timeline timecodes, and cap the out-point to known source duration when available.
 - Assign current, locally imported video masters to scenes.
 - Preview selected video and audio files from the existing IndexedDB media store.
 - Assign a local audio asset and a structurally validated SRT/WebVTT subtitle asset to the episode.
@@ -22,7 +22,7 @@ The editor guards episode changes so an edit loaded for one episode cannot be au
 
 ## Explicit limitations
 
-This is an EDL/planning editor, not a nonlinear video editor or renderer. It does not trim media, create transitions, mix audio, burn subtitles, transcode, probe codec/FPS/tracks, or export MP4. The assigned subtitle file is stored as an episode-level reference; the editor does not render its cues over the preview. A final render pipeline requires a separate media-processing service or a verified browser-side FFmpeg/WASM workflow, plus durable storage and resource limits.
+This is an EDL/planning editor, not a nonlinear video editor or renderer. The source in/out points are edit instructions only: the current app does not physically trim media, create transitions, mix audio, burn subtitles, transcode, probe codec/FPS/tracks, or export MP4. The assigned subtitle file is stored as an episode-level reference; the editor does not render its cues over the preview. A final render pipeline requires a separate media-processing service or a verified browser-side FFmpeg/WASM workflow, plus durable storage and resource limits.
 
 ## Next production requirements
 
