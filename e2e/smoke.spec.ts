@@ -43,6 +43,77 @@ test("streaming player navigates between episodes and clamps at both ends", asyn
   await expect(next).toBeEnabled();
 });
 
+test("continue watching opens the saved episode and restores its playback position", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(HTMLMediaElement.prototype, "duration", {
+      configurable: true,
+      get: () => 30,
+    });
+    Object.defineProperty(HTMLMediaElement.prototype, "currentTime", {
+      configurable: true,
+      get() { return Number((this as HTMLMediaElement).dataset.mockCurrentTime || "0"); },
+      set(value: number) { (this as HTMLMediaElement).dataset.mockCurrentTime = String(value); },
+    });
+  });
+  await page.goto("/streaming");
+  await page.evaluate(async () => {
+    const seriesId = "resume-series";
+    const episodeId = "resume-episode-2";
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: seriesId,
+      title: "Resume Test",
+      logline: "Saved playback position",
+      genre: "Drama",
+      status: "Publicado",
+      episodes: [
+        { id: "resume-episode-1", title: "First Chapter", status: "Aprobado" },
+        { id: episodeId, title: "Second Chapter", status: "Aprobado" },
+      ],
+    }]));
+    localStorage.setItem("microdrama-assets-v1", JSON.stringify([{
+      id: "resume-master",
+      seriesId,
+      episodeId,
+      kind: "Vídeo",
+      assetRole: "Máster de episodio",
+      fileId: "resume-media",
+      fileName: "resume.webm",
+      mimeType: "video/webm",
+      versionStatus: "Actual",
+    }]));
+    localStorage.setItem("microdrama-watch-progress-v1", JSON.stringify({
+      ["studio-" + seriesId]: { episode: 1, time: 10, duration: 30, updatedAt: "2026-11-21T18:00:00.000Z" },
+    }));
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("microdrama-media-v1", 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("files")) request.result.createObjectStore("files", { keyPath: "id" });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction("files", "readwrite");
+      transaction.objectStore("files").put({
+        id: "resume-media",
+        file: new File(["local playback fixture"], "resume.webm", { type: "video/webm" }),
+      });
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    db.close();
+  });
+  await page.reload();
+
+  await page.getByRole("button", { name: "Continuar viendo Resume Test" }).click();
+  const player = page.locator(".vertical-player video");
+  await expect(player).toBeVisible();
+  await expect(player).toHaveAttribute("src", /^blob:/);
+  await player.evaluate(video => video.dispatchEvent(new Event("loadedmetadata")));
+  await expect(player).toHaveAttribute("data-mock-current-time", "10");
+  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 2 DE 2");
+});
+
 test("Studio exposes local workspace and production navigation", async ({ page }) => {
   await page.goto("/studio");
   await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
