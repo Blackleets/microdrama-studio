@@ -10,7 +10,8 @@ The editor at `/studio/post-production` creates an episode-level edit decision l
 - Assign current, locally imported video masters to scenes.
 - Preview selected video and audio files from the existing IndexedDB media store.
 - Assign a local audio asset and a structurally validated SRT/WebVTT subtitle asset to the episode.
-- Save the current edit automatically and create named snapshots that can be restored.\n- Export a portable JSON EDL containing scene order, planned durations, linked asset IDs and audio/subtitle references.
+- Save the current edit automatically and create named snapshots that can be restored.
+- Export a portable JSON EDL containing scene order, planned durations, linked asset IDs and audio/subtitle references.
 - Keep each episode's edit and snapshot history under separate localStorage keys.
 
 ## Persistence and safety
