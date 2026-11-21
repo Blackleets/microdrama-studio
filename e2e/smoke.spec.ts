@@ -77,6 +77,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
     const videoBlob = await videoBlobPromise;
     stream.getTracks().forEach(track => track.stop());
     const sourceFile = new File([videoBlob], "scene.webm", { type: "video/webm" });
+    const subtitleFile = new File(["1\\n00:00:00,000 --> 00:00:00,800\\nRender subtitle"], "captions.srt", { type: "text/plain" });
 
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open("microdrama-media-v1", 1);
@@ -89,6 +90,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
     await new Promise<void>((resolve, reject) => {
       const transaction = db.transaction("files", "readwrite");
       transaction.objectStore("files").put({ id: "render-source-file", file: sourceFile });
+      transaction.objectStore("files").put({ id: "render-subtitle-file", file: subtitleFile });
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
     });
@@ -110,17 +112,36 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
       versionStatus: "Actual",
       rights: "Confirmado",
       durationSeconds: 1.4,
+    }, {
+      id: "render-subtitle-asset",
+      logicalId: "render-subtitle-logical",
+      seriesId,
+      seriesTitle: "Render Test",
+      episodeId,
+      episodeTitle: "Test Episode",
+      title: "Episode captions",
+      kind: "Documento",
+      fileId: "render-subtitle-file",
+      fileName: "captions.srt",
+      mimeType: "text/plain",
+      subtitleFormat: "SRT",
+      subtitleLanguage: "es",
+      subtitleValidation: "Válido",
+      subtitleCueCount: 1,
+      versionStatus: "Actual",
+      rights: "Confirmado",
     }]));
     localStorage.setItem("microdrama-edit-timeline-v1:" + episodeId, JSON.stringify({
       scenes: [{ id: "render-scene", title: "Scene", durationSeconds: 1, sourceInSeconds: 0, sourceOutSeconds: 1, videoAssetId: "render-source-asset" }],
       audioAssetId: "",
-      subtitleAssetId: "",
+      subtitleAssetId: "render-subtitle-asset",
     }));
   });
 
   await page.goto("/studio/post-production");
   const renderButton = page.getByRole("button", { name: /Renderizar máster WebM/ });
   await expect(renderButton).toBeEnabled();
+  await page.getByRole("checkbox", { name: "Incrustar subtítulos en el vídeo" }).check();
   await renderButton.click();
   await expect(page.getByRole("link", { name: /Descargar .*master\.webm/ })).toBeVisible({ timeout: 60_000 });
 
@@ -133,4 +154,5 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
   expect(renderedMaster.mimeType).toContain("video/webm");
   expect(renderedMaster.width).toBe(720);
   expect(renderedMaster.height).toBe(1280);
+  expect(renderedMaster.subtitleBurnedIn).toBe(true);
 });
