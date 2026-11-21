@@ -102,7 +102,7 @@ export default function AssetRegistry(){
  const [filter,setFilter]=useState<"Todos"|"Actuales"|"Archivados"|Rights>("Todos");
  const [notice,setNotice]=useState("Registro local · No se han subido archivos");
  const [expanded,setExpanded]=useState<string|null>(null);
- function invalidateSeriesRelease(targetSeriesId:string){try{localStorage.setItem("microdrama-release-qa-v1:"+targetSeriesId,JSON.stringify([false,false,false]));const stored=JSON.parse(localStorage.getItem("microdrama-studio-local-v1")||"[]") as Array<{id:string;status?:string}>;localStorage.setItem("microdrama-studio-local-v1",JSON.stringify(stored.map(item=>item.id===targetSeriesId&&item.status==="Publicado"?{...item,status:"Desarrollo"}:item)));}catch{setNotice("No se pudo invalidar el QA local. Revisa el almacenamiento del navegador.");}}
+ function invalidateSeriesRelease(targetSeriesId:string){try{localStorage.setItem("microdrama-release-qa-v1:"+targetSeriesId,JSON.stringify([false,false,false]));}catch{setNotice("No se pudieron reiniciar las marcas de QA local.");}try{const stored=JSON.parse(localStorage.getItem("microdrama-studio-local-v1")||"[]") as Array<{id:string;status?:string}>;localStorage.setItem("microdrama-studio-local-v1",JSON.stringify(stored.map(item=>item.id===targetSeriesId&&item.status==="Publicado"?{...item,status:"Desarrollo"}:item)));}catch{setNotice("No se pudo retirar la ficha del catálogo local; revisa el almacenamiento del navegador.");}}
 
  useEffect(()=>{
   try{
