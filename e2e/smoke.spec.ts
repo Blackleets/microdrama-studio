@@ -708,23 +708,26 @@ test("streaming discovery supports search, genre filters and persistent favorite
   await page.goto("/streaming");
   const search = page.getByRole("textbox", { name: "Buscar series" });
   await search.fill("Cero");
-  await expect(page.getByRole("heading", { name: "Cero grados" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeHidden();
+  const catalog = page.locator(".stream-section").last();
+  await expect(catalog.getByRole("heading", { name: "Cero grados" })).toBeVisible();
+  await expect(catalog.locator(".show-card")).toHaveCount(1);
   await search.fill("");
 
   await page.locator(".stream-tabs").getByRole("button", { name: "Romance" }).click();
-  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Cero grados" })).toBeHidden();
+  await expect(catalog.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(catalog.getByRole("heading", { name: "Cero grados" })).toHaveCount(0);
+  await expect(catalog.locator(".show-card")).toHaveCount(1);
   await page.locator(".stream-tabs").getByRole("button", { name: "Para ti" }).click();
 
   const promiseCard = page.locator(".show-card").filter({ hasText: "La última promesa" });
   await promiseCard.getByRole("button", { name: "Añadir a mi lista" }).click();
   await page.locator(".stream-tabs").getByRole("button", { name: "Mi lista" }).click();
-  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Cero grados" })).toBeHidden();
+  await expect(catalog.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(catalog.locator(".show-card")).toHaveCount(1);
   await page.reload();
   await page.locator(".stream-tabs").getByRole("button", { name: "Mi lista" }).click();
-  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(page.locator(".stream-section").last().getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(page.locator(".stream-section").last().locator(".show-card")).toHaveCount(1);
 });
 
 test("mobile navigation updates the active catalog filter", async ({ page }) => {
