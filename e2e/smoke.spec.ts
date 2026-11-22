@@ -55,16 +55,11 @@ test("continue watching opens the saved episode and restores its playback positi
       set(value: number) { (this as HTMLMediaElement).dataset.mockCurrentTime = String(value); },
     });
   });
-  await page.goto("/streaming");
-  await page.evaluate(async () => {
+  await page.addInitScript(() => {
     const seriesId = "resume-series";
     const episodeId = "resume-episode-2";
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
-      id: seriesId,
-      title: "Resume Test",
-      logline: "Saved playback position",
-      genre: "Drama",
-      status: "Publicado",
+      id: seriesId, title: "Resume Test", logline: "Saved playback position", genre: "Drama", status: "Publicado",
       episodes: [
         { id: "resume-episode-1", title: "First Chapter", status: "Aprobado" },
         { id: episodeId, title: "Second Chapter", status: "Aprobado" },
@@ -72,29 +67,19 @@ test("continue watching opens the saved episode and restores its playback positi
       ],
     }]));
     localStorage.setItem("microdrama-assets-v1", JSON.stringify([{
-      id: "resume-master",
-      seriesId,
-      episodeId,
-      kind: "Vídeo",
-      assetRole: "Máster de episodio",
-      fileId: "resume-media",
-      fileName: "resume.webm",
-      mimeType: "video/webm",
-      versionStatus: "Actual",
+      id: "resume-master", seriesId, episodeId, kind: "Vídeo", assetRole: "Máster de episodio", fileId: "resume-media", fileName: "resume.webm", mimeType: "video/webm", versionStatus: "Actual",
     }, {
-      id: "resume-master-3",
-      seriesId,
-      episodeId: "resume-episode-3",
-      kind: "Vídeo",
-      assetRole: "Máster de episodio",
-      fileId: "resume-media",
-      fileName: "resume.webm",
-      mimeType: "video/webm",
-      versionStatus: "Actual",
+      id: "resume-master-3", seriesId, episodeId: "resume-episode-3", kind: "Vídeo", assetRole: "Máster de episodio", fileId: "resume-media", fileName: "resume.webm", mimeType: "video/webm", versionStatus: "Actual",
     }]));
     localStorage.setItem("microdrama-watch-progress-v1", JSON.stringify({
       ["studio-" + seriesId]: { episode: 1, time: 10, duration: 30, updatedAt: "2026-11-21T18:00:00.000Z" },
     }));
+  });
+  await page.goto("/streaming");
+  await expect(page.getByRole("button", { name: "Continuar viendo Resume Test" })).toBeVisible();
+  await page.evaluate(async () => {
+    const seriesId = "resume-series";
+    const episodeId = "resume-episode-2";
     const canvas = document.createElement("canvas");
     canvas.width = 160;
     canvas.height = 284;
