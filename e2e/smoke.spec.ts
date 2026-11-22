@@ -702,3 +702,41 @@ test("streaming catalog and detail dialog fit 320px and landscape viewports", as
   expect(playerBox?.x).toBeGreaterThanOrEqual(0);
   expect(playerBox?.width).toBeLessThanOrEqual(844);
 });
+
+
+test("streaming discovery supports search, genre filters and persistent favorites", async ({ page }) => {
+  await page.goto("/streaming");
+  const search = page.getByRole("textbox", { name: "Buscar series" });
+  await search.fill("Cero");
+  await expect(page.getByRole("heading", { name: "Cero grados" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeHidden();
+  await search.fill("");
+
+  await page.locator(".stream-tabs").getByRole("button", { name: "Romance" }).click();
+  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cero grados" })).toBeHidden();
+  await page.locator(".stream-tabs").getByRole("button", { name: "Para ti" }).click();
+
+  const promiseCard = page.locator(".show-card").filter({ has: page.getByRole("heading", { name: "La última promesa" }) });
+  await promiseCard.getByRole("button", { name: "Añadir a mi lista" }).click();
+  await page.locator(".stream-tabs").getByRole("button", { name: "Mi lista" }).click();
+  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cero grados" })).toBeHidden();
+  await page.reload();
+  await page.locator(".stream-tabs").getByRole("button", { name: "Mi lista" }).click();
+  await expect(page.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+});
+
+test("mobile navigation updates the active catalog filter", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/streaming");
+  const mobileNav = page.getByRole("navigation", { name: "Navegación principal" });
+  const romance = mobileNav.getByRole("button", { name: "Romance" });
+  await romance.click();
+  await expect(romance).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("heading", { name: "Explora romance" })).toBeVisible();
+  const myList = mobileNav.getByRole("button", { name: "Mi lista" });
+  await myList.click();
+  await expect(myList).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("heading", { name: "Tu lista" })).toBeVisible();
+});
