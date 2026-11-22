@@ -16,15 +16,15 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - [ ] Add E2E coverage for Studio-to-streaming local publishing, including rejection when any episode is not approved or release QA fails.
 - [x] Harden player lifecycle: release object URLs and IndexedDB connections on cleanup/failure; handle missing files, blocked storage, unsupported codecs and subtitle loading errors visibly. Keep E2E coverage as the remaining verification gate.
 - [x] Add local resume/continue-watching state (series + episode + playback position) using the separate `microdrama-watch-progress-v1` key and 5-second checkpoints. E2E coverage and migration tests remain open.
-- [ ] Verify modal focus management, focus return, keyboard navigation, screen-reader labels, contrast and reduced-motion behavior.
-- [ ] Add a mobile viewport E2E project and verify fixed navigation/safe-area spacing, modal scrolling and player dimensions.
+- [x] Implement modal focus management, focus return, keyboard episode navigation, meaningful close labels and visible focus handling; automated coverage added. Manual screen-reader and contrast checks remain open.
+- [x] Add narrow 320px and landscape 844×390 E2E coverage for streaming navigation and detail-dialog bounds. Manual iOS/Android device and safe-area verification remains open.
 - [ ] Test backup export/restore compatibility and clearly warn that media blobs are not included.
 - [ ] Add a documented manual smoke-test matrix for Chrome Android, Safari iOS and desktop Chromium.
 
 ## P1 — Improve consumer streaming experience
 
 - [x] Add continue-watching row using real saved progress, not placeholder percentages.
-- [ ] Add next/previous episode navigation and end-of-episode continuation with a user-controlled countdown.
+- [x] Add previous/next episode navigation and end-of-episode continuation with an 8-second user-controlled countdown.
 - [ ] Improve player controls and error recovery while keeping browser-native media playback where practical.
 - [ ] Add series synopsis, episode metadata, progress indicators and accurate availability states.
 - [ ] Improve catalog sorting and filtering without implying real-time trends or analytics.
@@ -59,15 +59,16 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - No MP4 export or server-side transcoding claims.
 - No merge to `main` without owner approval.
 
-## Current implementation snapshot (2026-11-21)
+## Current implementation snapshot (2026-11-22)
 
 - [x] Cinematic streaming CSS and reduced-motion support.
 - [x] Studio shell visual polish.
 - [x] Four original SVG catalog artworks integrated; catalog labels remain demo.
 - [x] Mobile bottom navigation.
 - [x] Episode list in series detail view.
-- [x] Modal dialog semantics and Escape-key dismissal.
+- [x] Modal dialog semantics, Escape dismissal, focus trapping/restoration, body scroll locking and accessible close label.
+- [x] Keyboard episode-list navigation (Arrow Up/Down, Home, End) and 44px minimum key touch targets.
 - [x] Local player lifecycle hardening and media error fallback.
 - [x] Local continue-watching checkpoints and resume row.
-- [ ] Latest commit's GitHub Actions result independently verified (run #300/#301 pending at snapshot).
-- [ ] Latest feature preview smoke-tested on a real mobile device.
+- [x] GitHub Actions run #321 passed on commit `5970162` (dependency audit, lint, production build and Playwright smoke tests). Subsequent accessibility commits require their own CI run.
+- [ ] Latest feature preview smoke-tested on a real mobile device; browser-based screenshot audit and assistive-technology checks are still pending.
