@@ -6,11 +6,171 @@ test("root route opens the streaming catalog", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /La última/ }).first()).toBeVisible();
 });
 
+test("streaming player navigates between episodes and clamps at both ends", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "player-nav-series",
+      title: "Player Nav Test",
+      logline: "Episode navigation regression",
+      genre: "Drama",
+      status: "Publicado",
+      episodes: [
+        { id: "player-nav-1", title: "First Chapter", status: "Aprobado" },
+        { id: "player-nav-2", title: "Second Chapter", status: "Aprobado" },
+      ],
+    }]));
+    localStorage.setItem("microdrama-assets-v1", "[]");
+  });
+  await page.goto("/streaming");
+  await page.locator(".show-poster").filter({ hasText: "PLAYER NAV TEST" }).click();
+  await page.getByRole("dialog", { name: "Player Nav Test" }).getByRole("button", { name: "Ver episodio 1" }).click();
+
+  const position = page.getByTestId("player-episode-position");
+  const previous = page.getByTestId("player-previous-episode");
+  const next = page.getByTestId("player-next-episode");
+  await expect(position).toHaveText("EPISODIO 1 DE 2");
+  await expect(previous).toBeDisabled();
+  await expect(next).toBeEnabled();
+
+  await next.click();
+  await expect(position).toHaveText("EPISODIO 2 DE 2");
+  await expect(previous).toBeEnabled();
+  await expect(next).toBeDisabled();
+
+  await previous.click();
+  await expect(position).toHaveText("EPISODIO 1 DE 2");
+  await expect(previous).toBeDisabled();
+  await expect(next).toBeEnabled();
+});
+
+test("continue watching opens the saved episode and restores its playback position", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(HTMLMediaElement.prototype, "duration", {
+      configurable: true,
+      get: () => 30,
+    });
+    Object.defineProperty(HTMLMediaElement.prototype, "currentTime", {
+      configurable: true,
+      get() { return Number((this as HTMLMediaElement).dataset.mockCurrentTime || "0"); },
+      set(value: number) { (this as HTMLMediaElement).dataset.mockCurrentTime = String(value); },
+    });
+  });
+  await page.addInitScript(() => {
+    const seriesId = "resume-series";
+    const episodeId = "resume-episode-2";
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: seriesId, title: "Resume Test", logline: "Saved playback position", genre: "Drama", status: "Publicado",
+      episodes: [
+        { id: "resume-episode-1", title: "First Chapter", status: "Aprobado" },
+        { id: episodeId, title: "Second Chapter", status: "Aprobado" },
+        { id: "resume-episode-3", title: "Final Chapter", status: "Aprobado" },
+      ],
+    }]));
+    localStorage.setItem("microdrama-assets-v1", JSON.stringify([{
+      id: "resume-master", seriesId, episodeId, kind: "Vídeo", assetRole: "Máster de episodio", fileId: "resume-media", fileName: "resume.webm", mimeType: "video/webm", versionStatus: "Actual",
+    }, {
+      id: "resume-master-3", seriesId, episodeId: "resume-episode-3", kind: "Vídeo", assetRole: "Máster de episodio", fileId: "resume-media", fileName: "resume.webm", mimeType: "video/webm", versionStatus: "Actual",
+    }]));
+    localStorage.setItem("microdrama-watch-progress-v1", JSON.stringify({
+      ["studio-" + seriesId]: { episode: 1, time: 10, duration: 30, updatedAt: "2026-11-21T18:00:00.000Z" },
+    }));
+  });
+  await page.goto("/streaming");
+  await expect(page.getByRole("button", { name: "Continuar viendo Resume Test" })).toBeVisible();
+  await page.evaluate(async () => {
+    const seriesId = "resume-series";
+    const episodeId = "resume-episode-2";
+    const canvas = document.createElement("canvas");
+    canvas.width = 160;
+    canvas.height = 284;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Canvas unavailable for playback fixture");
+    context.fillStyle = "#263c49";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    const stream = canvas.captureStream(15);
+    const recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+    const chunks: Blob[] = [];
+    const recording = new Promise<Blob>((resolve, reject) => {
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onerror = () => reject(new Error("Could not create playback fixture"));
+      recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
+    });
+    recorder.start();
+    await new Promise(resolve => window.setTimeout(resolve, 1200));
+    recorder.stop();
+    const videoFile = new File([await recording], "resume.webm", { type: "video/webm" });
+    stream.getTracks().forEach(track => track.stop());
+
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("microdrama-media-v1", 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("files")) request.result.createObjectStore("files", { keyPath: "id" });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction("files", "readwrite");
+      transaction.objectStore("files").put({
+        id: "resume-media",
+        file: videoFile,
+      });
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    db.close();
+  });
+  await page.reload();
+
+  await page.getByRole("button", { name: "Continuar viendo Resume Test" }).click();
+  const player = page.locator(".vertical-player video");
+  await expect(player).toBeVisible();
+  await expect(player).toHaveAttribute("src", /^blob:/);
+  await player.evaluate(video => video.dispatchEvent(new Event("loadedmetadata")));
+  await expect(player).toHaveAttribute("data-mock-current-time", "10");
+  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 2 DE 3");
+
+  await player.evaluate(video => video.dispatchEvent(new Event("ended")));
+  const countdown = page.getByTestId("player-auto-next-countdown");
+  await expect(countdown).toBeVisible();
+  await expect(page.getByTestId("player-auto-next-seconds")).toHaveText("8");
+  await page.getByTestId("player-auto-next-cancel").click();
+  await expect(countdown).toBeHidden();
+
+  await player.evaluate(video => video.dispatchEvent(new Event("ended")));
+  await expect(countdown).toBeVisible();
+  await expect(page.getByTestId("player-episode-position")).toHaveText("EPISODIO 3 DE 3", { timeout: 12_000 });
+  await expect(player).toHaveAttribute("src", /^blob:/);
+  await expect(countdown).toBeHidden();
+
+  await player.evaluate(video => video.dispatchEvent(new Event("ended")));
+  await expect(countdown).toBeHidden();
+});
+
 test("Studio exposes local workspace and production navigation", async ({ page }) => {
   await page.goto("/studio");
   await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await expect(page.getByRole("button", { name: "Exportar copia de seguridad" })).toBeVisible();
   await expect(page.getByRole("link", { name: /Post Production/ })).toBeVisible();
+});
+
+test("Studio tolerates legacy series records without optional genre metadata", async ({ page }) => {
+  await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
+  await page.evaluate(() => {
+    localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
+      id: "legacy-series",
+      title: "Legacy Series",
+      logline: "A record created by an earlier version",
+      status: "Desarrollo",
+      episodes: [],
+      characters: [],
+    }]));
+  });
+  await page.reload();
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Legacy Series" })).toBeVisible();
+  await expect(page.getByText("SIN GÉNERO")).toBeVisible();
 });
 
 test("asset registry and post-production routes render", async ({ page }) => {
@@ -44,6 +204,7 @@ test("Studio and post-production fit a mobile viewport", async ({ page }) => {
 test("local WebM renderer creates a rights-pending episode master", async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(async () => {
     const seriesId = "render-series";
     const episodeId = "render-episode";
@@ -223,6 +384,7 @@ test("local WebM renderer creates a rights-pending episode master", async ({ pag
 
 test("asset rights cannot be confirmed without license evidence", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "rights-series",
@@ -242,6 +404,7 @@ test("asset rights cannot be confirmed without license evidence", async ({ page 
 
 test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "subtitle-series",
@@ -254,10 +417,10 @@ test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
   await page.getByLabel("Serie asociada").selectOption("subtitle-series");
   await page.getByLabel("Nombre del activo").fill("Overlapping captions");
   await page.getByLabel("Tipo").selectOption("Documento");
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByTestId("asset-file-input").setInputFiles({
     name: "overlap.srt",
     mimeType: "text/plain",
-    buffer: Buffer.from("1\\n00:00:00,000 --> 00:00:02,000\\nFirst line\\n\\n2\\n00:00:01,000 --> 00:00:03,000\\nSecond line"),
+    buffer: Buffer.from("1\n00:00:00,000 --> 00:00:02,000\nFirst line\n\n2\n00:00:01,000 --> 00:00:03,000\nSecond line"),
   });
   await expect(page.getByText("ESTRUCTURA VÁLIDA")).toBeVisible();
   await expect(page.getByText(/2 cues de subtítulos validados localmente/)).toBeVisible();
@@ -265,6 +428,7 @@ test("subtitle parser accepts valid overlapping SRT cues", async ({ page }) => {
 
 test("confirming asset rights requires operator acknowledgement and invalidates release QA", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "rights-approval-series",
@@ -288,6 +452,7 @@ test("confirming asset rights requires operator acknowledgement and invalidates 
 
 test("local backup restore validates the format and replaces workspace metadata", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "before-restore",
@@ -320,7 +485,7 @@ test("local backup restore validates the format and replaces workspace metadata"
     mediaBlobsIncluded: false,
   };
   page.once("dialog", dialog => dialog.accept());
-  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "microdrama-backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(backup)),
@@ -342,6 +507,7 @@ test("local backup restore validates the format and replaces workspace metadata"
 
 test("invalid local backup does not overwrite existing workspace", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "keep-series",
@@ -352,7 +518,7 @@ test("invalid local backup does not overwrite existing workspace", async ({ page
     }]));
   });
   await page.reload();
-  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "invalid-backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify({ format: "wrong-format", schemaVersion: 99, series: [] })),
@@ -365,6 +531,7 @@ test("invalid local backup does not overwrite existing workspace", async ({ page
 
 test("malformed local backup metadata is rejected without modifying workspace", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "safe-series",
@@ -397,7 +564,7 @@ test("malformed local backup metadata is rejected without modifying workspace", 
     }],
     localData: { "microdrama-release-qa-v1:bad-series": [true, "yes", false] },
   };
-  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "malformed-backup.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(malformed)),
@@ -410,6 +577,7 @@ test("malformed local backup metadata is rejected without modifying workspace", 
 
 test("exported local backup can be imported as a round trip", async ({ page }) => {
   await page.goto("/studio");
+  await expect(page.getByText("LOCAL WORKSPACE")).toBeVisible();
   await page.evaluate(() => {
     localStorage.setItem("microdrama-studio-local-v1", JSON.stringify([{
       id: "roundtrip-series",
@@ -459,7 +627,7 @@ test("exported local backup can be imported as a round trip", async ({ page }) =
   });
   await page.reload();
   page.once("dialog", dialog => dialog.accept());
-  await page.locator('input[type="file"][accept="application/json,.json"]').setInputFiles({
+  await page.getByTestId("studio-backup-input").setInputFiles({
     name: "roundtrip-backup.json",
     mimeType: "application/json",
     buffer: backupBuffer,
@@ -468,4 +636,110 @@ test("exported local backup can be imported as a round trip", async ({ page }) =
   const restored = await page.evaluate(() => JSON.parse(localStorage.getItem("microdrama-studio-local-v1") || "[]"));
   expect(restored[0].id).toBe("roundtrip-series");
   expect(restored[0].episodes[0].scenes).toEqual(["Opening shot"]);
+});
+
+
+test("streaming dialog traps keyboard focus and restores the invoking control", async ({ page }) => {
+  await page.goto("/streaming");
+  const trigger = page.locator(".show-poster").first();
+  await trigger.focus();
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "La última promesa" });
+  const close = dialog.getByRole("button", { name: "Cerrar ventana" });
+  const lastEpisode = dialog.locator(".detail-episode-list button").last();
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(lastEpisode).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  const detail = page.getByRole("dialog", { name: "La última promesa" });
+  await detail.getByRole("button", { name: "Ver episodio 1" }).click();
+  const playerDialog = page.getByRole("dialog", { name: "La última promesa" });
+  await expect(playerDialog.getByRole("button", { name: "Cerrar ventana" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(playerDialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test("series episode list supports arrow, Home and End keyboard navigation", async ({ page }) => {
+  await page.goto("/streaming");
+  await page.locator(".show-poster").first().click();
+  const dialog = page.getByRole("dialog", { name: "La última promesa" });
+  const episodes = dialog.locator(".detail-episode-list button");
+  await episodes.first().focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(episodes.nth(1)).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(episodes.last()).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(episodes.first()).toBeFocused();
+});
+
+test("streaming catalog and detail dialog fit 320px and landscape viewports", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/streaming");
+  await expect(page.getByRole("button", { name: "Descubrir" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.locator(".show-poster").first().click();
+  const dialog = page.getByRole("dialog", { name: "La última promesa" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Cerrar ventana" })).toBeVisible();
+  const compactBox = await dialog.boundingBox();
+  expect(compactBox?.x).toBeGreaterThanOrEqual(0);
+  expect(compactBox?.width).toBeLessThanOrEqual(320);
+  await page.setViewportSize({ width: 844, height: 390 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(844);
+  await expect(dialog.getByRole("button", { name: "Cerrar ventana" })).toBeVisible();
+  await dialog.getByRole("button", { name: "Ver episodio 1" }).click();
+  const playerDialog = page.getByRole("dialog", { name: "La última promesa" });
+  await expect(playerDialog.getByRole("button", { name: "Cerrar ventana" })).toBeVisible();
+  const playerBox = await playerDialog.boundingBox();
+  expect(playerBox?.x).toBeGreaterThanOrEqual(0);
+  expect(playerBox?.width).toBeLessThanOrEqual(844);
+});
+
+
+test("streaming discovery supports search, genre filters and persistent favorites", async ({ page }) => {
+  await page.goto("/streaming");
+  const search = page.getByRole("textbox", { name: "Buscar series" });
+  await search.fill("Cero");
+  const catalog = page.locator(".stream-section").last();
+  await expect(catalog.getByRole("heading", { name: "Cero grados" })).toBeVisible();
+  await expect(catalog.locator(".show-card")).toHaveCount(1);
+  await search.fill("");
+
+  await page.locator(".stream-tabs").getByRole("button", { name: "Romance" }).click();
+  await expect(catalog.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(catalog.getByRole("heading", { name: "Cero grados" })).toHaveCount(0);
+  await expect(catalog.locator(".show-card")).toHaveCount(1);
+  await page.locator(".stream-tabs").getByRole("button", { name: "Para ti" }).click();
+
+  const promiseCard = page.locator(".show-card").filter({ hasText: "La última promesa" });
+  await promiseCard.getByRole("button", { name: "Añadir a mi lista" }).click();
+  await page.locator(".stream-tabs").getByRole("button", { name: "Mi lista" }).click();
+  await expect(catalog.getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(catalog.locator(".show-card")).toHaveCount(1);
+  await page.reload();
+  await page.locator(".stream-tabs").getByRole("button", { name: "Mi lista" }).click();
+  await expect(page.locator(".stream-section").last().getByRole("heading", { name: "La última promesa" })).toBeVisible();
+  await expect(page.locator(".stream-section").last().locator(".show-card")).toHaveCount(1);
+});
+
+test("mobile navigation updates the active catalog filter", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/streaming");
+  const mobileNav = page.getByRole("navigation", { name: "Navegación principal" });
+  const romance = mobileNav.getByRole("button", { name: "Romance" });
+  await romance.click();
+  await expect(romance).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("heading", { name: "Explora romance" })).toBeVisible();
+  const myList = mobileNav.getByRole("button", { name: "Mi lista" });
+  await myList.click();
+  await expect(myList).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("heading", { name: "Tu lista" })).toBeVisible();
 });
