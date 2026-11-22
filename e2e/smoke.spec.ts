@@ -717,7 +717,7 @@ test("streaming discovery supports search, genre filters and persistent favorite
   await expect(page.getByRole("heading", { name: "Cero grados" })).toBeHidden();
   await page.locator(".stream-tabs").getByRole("button", { name: "Para ti" }).click();
 
-  const promiseCard = page.locator(".show-card").filter({ has: page.getByRole("heading", { name: "La última promesa" }) });
+  const promiseCard = page.locator(".show-card").filter({ hasText: "La última promesa" });
   await promiseCard.getByRole("button", { name: "Añadir a mi lista" }).click();
   await page.locator(".stream-tabs").getByRole("button", { name: "Mi lista" }).click();
   await expect(page.getByRole("heading", { name: "La última promesa" })).toBeVisible();
