@@ -121,7 +121,7 @@ export default function StreamingApp(){
    document.body.style.overflow=previousOverflow;
    if(returnFocusRef.current?.isConnected)returnFocusRef.current.focus();
   };
- },[selected]);
+ },[selected,playing]);
  const catalogShows=useMemo(()=>[...publishedShows,...shows.filter(s=>!publishedShows.some(p=>p.id==="studio-"+s.id))],[publishedShows]);
  const filtered=useMemo(()=>catalogShows.filter(s=>(tab==="Mi lista"?favorites.includes(s.id):tab==="Romance"?s.genre.toLowerCase().includes("romance"):tab==="Suspense"?s.genre.toLowerCase().includes("suspense")||s.genre.toLowerCase().includes("thriller"):true)&&(!query||s.title.toLowerCase().includes(query.toLowerCase())||s.genre.toLowerCase().includes(query.toLowerCase()))),[tab,query,favorites,catalogShows]);
  function toggleFavorite(id:string){setFavorites(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);}
