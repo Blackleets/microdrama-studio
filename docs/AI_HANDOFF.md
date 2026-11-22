@@ -6,8 +6,8 @@ Active working branch: `feat/streaming-cinematic-motion`
 Base branch: `main` (do not push directly)  
 Open draft PR: https://github.com/Blackleets/microdrama-studio/pull/1  
 Current branch head: always fetch `feat/streaming-cinematic-motion` from GitHub; do not assume a hard-coded SHA is current.  
-Latest verified preview for commit `597016276e7f8940bf0cad7d3ca22720f9402dc3`: https://microdrama-studio-3ef7b34uu-nfyns-projects-b0cc0f41.vercel.app (**READY**, preview only). This preview predates the accessibility commits after `5970162`; verify the exact SHA and READY state for the current head before sharing it.  
-CI run #321 passed on `5970162` (dependency audit, high-severity audit gate, lint, production build and Playwright browser smoke tests). Accessibility changes after that commit are awaiting their own CI run; do not call the current head verified until that run is green.
+Latest verified preview for commit `7e3d823bb56d2c35f61434ab43727afeb8e563fc`: https://microdrama-studio-5awmi88pe-nfyns-projects-b0cc0f41.vercel.app (**READY**, preview only).  
+CI run #328 passed on `7e3d823` (dependency audit, high-severity audit gate, lint, production build and Playwright browser smoke tests). This is the current verified feature head as of 2026-11-22.
 
 ## Mission
 
@@ -46,7 +46,7 @@ The product should feel like a premium streaming startup, not a generic admin da
 - Studio includes asset registry, episode EDL, local WebM render path, editorial review and local publishing gate.
 - Studio backup export/restore covers supported metadata and edit plans, but **does not include IndexedDB media blobs**.
 - Current catalog's built-in four series are explicitly demo/catalog-demo content, not licensed commercial shows.
-- The last verified preview is READY for commit `5970162`, not the later accessibility commits. Check the exact commit SHA on every new preview. CI must pass on the current head; Vercel READY alone does not replace lint/build/E2E verification.
+- The last verified preview is READY for commit `7e3d823`. Check the exact commit SHA on every new preview. CI must pass on the current head; Vercel READY alone does not replace lint/build/E2E verification.
 
 ## Hard constraints — do not violate
 
