@@ -6,8 +6,8 @@ Active working branch: `feat/streaming-cinematic-motion`
 Base branch: `main` (do not push directly)  
 Open draft PR: https://github.com/Blackleets/microdrama-studio/pull/1  
 Current branch head: always fetch `feat/streaming-cinematic-motion` from GitHub; do not assume a hard-coded SHA is current.  
-Latest verified preview for commit `7e3d823bb56d2c35f61434ab43727afeb8e563fc`: https://microdrama-studio-5awmi88pe-nfyns-projects-b0cc0f41.vercel.app (**READY**, preview only).  
-CI run #328 passed on `7e3d823` (dependency audit, high-severity audit gate, lint, production build and Playwright browser smoke tests). This is the current verified feature head as of 2026-11-22.
+Latest verified preview for commit `44e323ddd08af66c270f4c6fb561d3da0d85fda0`: https://microdrama-studio-qynhnpf2i-nfyns-projects-b0cc0f41.vercel.app (**READY**, preview only).  
+CI run #333 passed on `44e323d` (dependency audit, high-severity audit gate, lint, production build and all 21 Playwright browser smoke tests). This is the current verified feature head as of 2026-11-22.
 
 ## Mission
 
@@ -41,6 +41,8 @@ The product should feel like a premium streaming startup, not a generic admin da
 - Mobile bottom navigation and detail-page episode list are implemented on the active branch. Compact 320px and landscape dialog checks are now included in E2E coverage; manual device and screen-reader checks remain pending.
 - Detail/player modal has dialog semantics, Escape dismissal, focus trapping/restoration, background scroll lock and a labelled close control.
 - Episode lists support Arrow Up/Down, Home and End navigation, expose the current episode with `aria-current`, and use larger touch targets.
+- Catalog filters expose their selected state with `aria-pressed`; the search input has an explicit accessible name. Search, genre filters, favorites persistence and mobile navigation have E2E coverage.
+- Tiny streaming footer and brand microcopy colors were adjusted to improve computed contrast; physical display review is still required.
 - Studio stores working data in browser localStorage; imported media blobs are in IndexedDB.
 - Approved episode masters can be played in the same browser profile. Validated local SRT/WebVTT captions can be attached.
 - Studio includes asset registry, episode EDL, local WebM render path, editorial review and local publishing gate.
