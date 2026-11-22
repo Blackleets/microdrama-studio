@@ -670,6 +670,15 @@ test("streaming dialog traps keyboard focus and restores the invoking control", 
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  const detail = page.getByRole("dialog", { name: "La última promesa" });
+  await detail.getByRole("button", { name: "Ver episodio 1" }).click();
+  const playerDialog = page.getByRole("dialog", { name: "La última promesa" });
+  await expect(playerDialog.getByRole("button", { name: "Cerrar ventana" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(playerDialog).toBeHidden();
+  await expect(trigger).toBeFocused();
 });
 
 test("series episode list supports arrow, Home and End keyboard navigation", async ({ page }) => {
@@ -701,4 +710,10 @@ test("streaming catalog and detail dialog fit 320px and landscape viewports", as
   await page.setViewportSize({ width: 844, height: 390 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(844);
   await expect(dialog.getByRole("button", { name: "Cerrar ventana" })).toBeVisible();
+  await dialog.getByRole("button", { name: "Ver episodio 1" }).click();
+  const playerDialog = page.getByRole("dialog", { name: "La última promesa" });
+  await expect(playerDialog.getByRole("button", { name: "Cerrar ventana" })).toBeVisible();
+  const playerBox = await playerDialog.boundingBox();
+  expect(playerBox?.x).toBeGreaterThanOrEqual(0);
+  expect(playerBox?.width).toBeLessThanOrEqual(844);
 });
