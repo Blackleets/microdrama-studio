@@ -656,7 +656,7 @@ test("exported local backup can be imported as a round trip", async ({ page }) =
 
 test("streaming dialog traps keyboard focus and restores the invoking control", async ({ page }) => {
   await page.goto("/streaming");
-  const trigger = page.getByRole("button", { name: /Ver episodio 1/ }).first();
+  const trigger = page.locator(".show-poster").first();
   await trigger.focus();
   await trigger.click();
   const dialog = page.getByRole("dialog", { name: "La última promesa" });
@@ -683,7 +683,7 @@ test("streaming dialog traps keyboard focus and restores the invoking control", 
 
 test("series episode list supports arrow, Home and End keyboard navigation", async ({ page }) => {
   await page.goto("/streaming");
-  await page.getByRole("button", { name: /Ver episodio 1/ }).first().click();
+  await page.locator(".show-poster").first().click();
   const dialog = page.getByRole("dialog", { name: "La última promesa" });
   const episodes = dialog.locator(".detail-episode-list button");
   await episodes.first().focus();
