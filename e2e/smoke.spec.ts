@@ -652,3 +652,53 @@ test("exported local backup can be imported as a round trip", async ({ page }) =
   expect(restored[0].id).toBe("roundtrip-series");
   expect(restored[0].episodes[0].scenes).toEqual(["Opening shot"]);
 });
+
+
+test("streaming dialog traps keyboard focus and restores the invoking control", async ({ page }) => {
+  await page.goto("/streaming");
+  const trigger = page.getByRole("button", { name: /Ver episodio 1/ }).first();
+  await trigger.focus();
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "La última promesa" });
+  const close = dialog.getByRole("button", { name: "Cerrar ventana" });
+  const lastEpisode = dialog.locator(".detail-episode-list button").last();
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(lastEpisode).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test("series episode list supports arrow, Home and End keyboard navigation", async ({ page }) => {
+  await page.goto("/streaming");
+  await page.getByRole("button", { name: /Ver episodio 1/ }).first().click();
+  const dialog = page.getByRole("dialog", { name: "La última promesa" });
+  const episodes = dialog.locator(".detail-episode-list button");
+  await episodes.first().focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(episodes.nth(1)).toBeFocused();
+  await page.keyboard.press("End");
+  await expect(episodes.last()).toBeFocused();
+  await page.keyboard.press("Home");
+  await expect(episodes.first()).toBeFocused();
+});
+
+test("streaming catalog and detail dialog fit 320px and landscape viewports", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/streaming");
+  await expect(page.getByRole("button", { name: "Descubrir" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.locator(".show-poster").first().click();
+  const dialog = page.getByRole("dialog", { name: "La última promesa" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Cerrar ventana" })).toBeVisible();
+  const compactBox = await dialog.boundingBox();
+  expect(compactBox?.x).toBeGreaterThanOrEqual(0);
+  expect(compactBox?.width).toBeLessThanOrEqual(320);
+  await page.setViewportSize({ width: 844, height: 390 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(844);
+  await expect(dialog.getByRole("button", { name: "Cerrar ventana" })).toBeVisible();
+});
