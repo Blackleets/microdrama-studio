@@ -11,6 +11,8 @@ Scope: `/streaming` catalog, series detail dialog, player dialog and fixed mobil
 - [x] Episode lists support Arrow Up/Down, Home and End.
 - [x] The active episode is announced through `aria-current="step"`.
 - [x] Catalog and detail dialog stay within a 320px viewport width.
+- [x] Search, genre filters, persistent favorites and mobile filter-state announcements have Playwright coverage.
+- [x] Small footer and brand microcopy colors adjusted to improve computed contrast.
 - [x] Detail dialog remains usable in an 844×390 landscape viewport.
 - [x] Close, episode and fixed-navigation controls have minimum 44px target sizing in CSS.
 
@@ -28,4 +30,4 @@ Scope: `/streaming` catalog, series detail dialog, player dialog and fixed mobil
 
 ## Evidence boundary
 
-CI and DOM assertions verify implemented keyboard behavior and viewport bounds. They do not establish full WCAG conformance, actual-device rendering, safe-area behavior on physical hardware, screen-reader announcement quality or visual contrast compliance. Capture current screenshots and complete the manual checks before closing issue #5.
+CI and DOM assertions verify implemented keyboard behavior, catalog filtering/favorites and viewport bounds. The tiny footer and brand microcopy colors were adjusted after computed contrast checks. They do not establish full WCAG conformance, actual-device rendering, safe-area behavior on physical hardware, screen-reader announcement quality or visual contrast compliance. Capture current screenshots and complete the manual checks before closing issue #5.
