@@ -12,7 +12,7 @@ This roadmap distinguishes the current local-first prototype from the work requi
 ## P0 — Stabilize the current local product
 
 - [ ] Run and verify GitHub Actions on the current feature branch head; resolve genuine lint/build/E2E failures without weakening checks.
-- [ ] Add E2E coverage for streaming discovery, genre/search filters, favorites persistence, opening a series, episode selection, Escape dismissal and mobile navigation.
+- [x] Add E2E coverage for streaming discovery, genre/search filters, favorites persistence, opening a series, episode selection, Escape dismissal and mobile navigation.
 - [ ] Add E2E coverage for Studio-to-streaming local publishing, including rejection when any episode is not approved or release QA fails.
 - [x] Harden player lifecycle: release object URLs and IndexedDB connections on cleanup/failure; handle missing files, blocked storage, unsupported codecs and subtitle loading errors visibly. Keep E2E coverage as the remaining verification gate.
 - [x] Add local resume/continue-watching state (series + episode + playback position) using the separate `microdrama-watch-progress-v1` key and 5-second checkpoints. E2E coverage and migration tests remain open.
@@ -25,6 +25,7 @@ This roadmap distinguishes the current local-first prototype from the work requi
 
 - [x] Add continue-watching row using real saved progress, not placeholder percentages.
 - [x] Add previous/next episode navigation and end-of-episode continuation with an 8-second user-controlled countdown.
+- [x] Add search, genre filtering, persistent favorites and mobile-navigation state assertions to Playwright.
 - [ ] Improve player controls and error recovery while keeping browser-native media playback where practical.
 - [ ] Add series synopsis, episode metadata, progress indicators and accurate availability states.
 - [ ] Improve catalog sorting and filtering without implying real-time trends or analytics.
@@ -68,7 +69,9 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - [x] Episode list in series detail view.
 - [x] Modal dialog semantics, Escape dismissal, focus trapping/restoration, body scroll locking and accessible close label.
 - [x] Keyboard episode-list navigation (Arrow Up/Down, Home, End) and 44px minimum key touch targets.
+- [x] Expose selected catalog filters with `aria-pressed` and label the search input explicitly.
+- [x] Raise contrast of tiny footer and brand microcopy; physical-device contrast verification remains pending.
 - [x] Local player lifecycle hardening and media error fallback.
 - [x] Local continue-watching checkpoints and resume row.
-- [x] GitHub Actions run #328 passed on commit `7e3d823` (dependency audit, high-severity audit gate, lint, production build and Playwright smoke tests).
+- [x] GitHub Actions run #333 passed on commit `44e323d` (dependency audit, high-severity audit gate, lint, production build and all 21 Playwright smoke tests).
 - [ ] Latest feature preview smoke-tested on a real mobile device; browser-based screenshot audit and assistive-technology checks are still pending.
