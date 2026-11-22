@@ -1,13 +1,13 @@
 # AI handoff — MicroDrama Studio
 
-Last updated: 2026-11-21  
+Last updated: 2026-11-22  
 Repository: `Blackleets/microdrama-studio`  
 Active working branch: `feat/streaming-cinematic-motion`  
 Base branch: `main` (do not push directly)  
 Open draft PR: https://github.com/Blackleets/microdrama-studio/pull/1  
 Current branch head: always fetch `feat/streaming-cinematic-motion` from GitHub; do not assume a hard-coded SHA is current.  
-Latest verified preview (previous head `b0a0d8c3ed43b8551ecd6463a786fc5af502af97`): https://microdrama-studio-xgul3ctnn-nfyns-projects-b0cc0f41.vercel.app (**READY**). A new preview should be generated for the current head; verify its commit SHA and READY state before sharing it.  
-CI run #296 (`0d06e6c`) passed dependency audit, lint and production build but failed four browser tests. The next patch added stable test IDs for the actual upload controls and fixed the SRT fixture. CI run #300 is checking that correction; run #301 checks the subsequent player/progress work. Treat the branch as unverified until the latest run finishes green.
+Latest verified preview for commit `597016276e7f8940bf0cad7d3ca22720f9402dc3`: https://microdrama-studio-3ef7b34uu-nfyns-projects-b0cc0f41.vercel.app (**READY**, preview only). This preview predates the accessibility commits after `5970162`; verify the exact SHA and READY state for the current head before sharing it.  
+CI run #321 passed on `5970162` (dependency audit, high-severity audit gate, lint, production build and Playwright browser smoke tests). Accessibility changes after that commit are awaiting their own CI run; do not call the current head verified until that run is green.
 
 ## Mission
 
@@ -38,14 +38,15 @@ The product should feel like a premium streaming startup, not a generic admin da
 - Streaming includes editorial hero, four original SVG demo artworks, catalog cards, genre/search filters, favorites/watchlist, series detail modal, episode selection and a vertical player.
 - Player lifecycle now closes IndexedDB connections in `finally`, releases object URLs on cleanup, handles blocked/missing local media and reports unsupported video decoding; subtitle failures are separated from video playback failures.
 - Continue-watching is implemented with versioned localStorage key `microdrama-watch-progress-v1`, 5-second checkpoints, episode/time resume and a consumer row. It is device/browser-profile local; no cross-device sync.
-- Mobile bottom navigation and detail-page episode list are implemented on the active branch.
-- Detail/player modal has dialog semantics and Escape-key dismissal.
+- Mobile bottom navigation and detail-page episode list are implemented on the active branch. Compact 320px and landscape dialog checks are now included in E2E coverage; manual device and screen-reader checks remain pending.
+- Detail/player modal has dialog semantics, Escape dismissal, focus trapping/restoration, background scroll lock and a labelled close control.
+- Episode lists support Arrow Up/Down, Home and End navigation, expose the current episode with `aria-current`, and use larger touch targets.
 - Studio stores working data in browser localStorage; imported media blobs are in IndexedDB.
 - Approved episode masters can be played in the same browser profile. Validated local SRT/WebVTT captions can be attached.
 - Studio includes asset registry, episode EDL, local WebM render path, editorial review and local publishing gate.
 - Studio backup export/restore covers supported metadata and edit plans, but **does not include IndexedDB media blobs**.
 - Current catalog's built-in four series are explicitly demo/catalog-demo content, not licensed commercial shows.
-- The last verified preview is READY for the previous head, not necessarily the current branch head. Check the exact commit SHA on every new preview. CI must pass on the current head; Vercel READY alone does not replace lint/build/E2E verification.
+- The last verified preview is READY for commit `5970162`, not the later accessibility commits. Check the exact commit SHA on every new preview. CI must pass on the current head; Vercel READY alone does not replace lint/build/E2E verification.
 
 ## Hard constraints — do not violate
 
@@ -105,3 +106,9 @@ A feature is not done because the UI looks finished. It must:
 - The local rights flag is an operator declaration, not legal verification.
 
 If unsure whether a change could affect stored data or publishing, stop and document the risk rather than guessing.
+
+## Accessibility verification status (2026-11-22)
+
+- Automated coverage added for dialog focus entry, focus trap, Escape dismissal, focus restoration, episode-list Arrow/Home/End navigation and 320px/landscape layout bounds.
+- CSS now supports a scrollable modal backdrop, dynamic viewport-height constraints, 44px close/navigation/episode controls and compact 320px header sizing.
+- See `docs/MOBILE_ACCESSIBILITY_CHECKLIST.md` for manual checks still required. A screenshot-based browser audit has not been completed in this environment; do not claim visual or assistive-technology sign-off from source review and CI alone.
