@@ -70,5 +70,5 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - [x] Keyboard episode-list navigation (Arrow Up/Down, Home, End) and 44px minimum key touch targets.
 - [x] Local player lifecycle hardening and media error fallback.
 - [x] Local continue-watching checkpoints and resume row.
-- [x] GitHub Actions run #321 passed on commit `5970162` (dependency audit, lint, production build and Playwright smoke tests). Subsequent accessibility commits require their own CI run.
+- [x] GitHub Actions run #328 passed on commit `7e3d823` (dependency audit, high-severity audit gate, lint, production build and Playwright smoke tests).
 - [ ] Latest feature preview smoke-tested on a real mobile device; browser-based screenshot audit and assistive-technology checks are still pending.
