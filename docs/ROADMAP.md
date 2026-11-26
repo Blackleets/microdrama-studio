@@ -4,6 +4,7 @@ This roadmap distinguishes the current local-first prototype from the work requi
 
 ## Active GitHub task tickets
 
+- [#6 — CHISPA commercial platform and Google Play master plan](https://github.com/Blackleets/microdrama-studio/issues/6)
 - [#2 — E2E coverage for streaming and local publishing](https://github.com/Blackleets/microdrama-studio/issues/2)
 - [#3 — Harden local player lifecycle and media errors](https://github.com/Blackleets/microdrama-studio/issues/3)
 - [#4 — Versioned continue-watching progress](https://github.com/Blackleets/microdrama-studio/issues/4)
@@ -11,6 +12,7 @@ This roadmap distinguishes the current local-first prototype from the work requi
 
 ## P0 — Stabilize the current local product
 
+- [x] Audit Studio routes and persistence boundaries; record the route/data/auth matrix and non-destructive architecture decision in [CHISPA P0 audit](CHISPA_P0_AUDIT.md).
 - [ ] Run and verify GitHub Actions on the current feature branch head; resolve genuine lint/build/E2E failures without weakening checks.
 - [x] Add E2E coverage for streaming discovery, genre/search filters, favorites persistence, opening a series, episode selection, Escape dismissal and mobile navigation.
 - [ ] Add E2E coverage for Studio-to-streaming local publishing, including rejection when any episode is not approved or release QA fails.
@@ -50,6 +52,7 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - [ ] Implement real checkout, webhooks, refunds, taxes, entitlement checks, subscriptions and server-authoritative wallet ledger.
 - [ ] Implement rights evidence, takedown, territory/expiry and moderation workflows.
 - [ ] Add privacy/legal review, account recovery, security controls, analytics consent, monitoring, backups and incident response.
+- [ ] Evaluate and implement the Android packaging strategy; no Android application/AAB is currently verified.
 
 ## Explicit non-goals for the current local-first phase
 
@@ -60,18 +63,13 @@ This roadmap distinguishes the current local-first prototype from the work requi
 - No MP4 export or server-side transcoding claims.
 - No merge to `main` without owner approval.
 
-## Current implementation snapshot (2026-11-22)
+## Current implementation snapshot (2026-11-26)
 
 - [x] Cinematic streaming CSS and reduced-motion support.
 - [x] Studio shell visual polish.
 - [x] Four original SVG catalog artworks integrated; catalog labels remain demo.
-- [x] Mobile bottom navigation.
-- [x] Episode list in series detail view.
-- [x] Modal dialog semantics, Escape dismissal, focus trapping/restoration, body scroll locking and accessible close label.
-- [x] Keyboard episode-list navigation (Arrow Up/Down, Home, End) and 44px minimum key touch targets.
-- [x] Expose selected catalog filters with `aria-pressed` and label the search input explicitly.
-- [x] Raise contrast of tiny footer and brand microcopy; physical-device contrast verification remains pending.
+- [x] Mobile bottom navigation, accessible dialogs, keyboard episode navigation and responsive 320px/landscape coverage on the feature branch.
 - [x] Local player lifecycle hardening and media error fallback.
 - [x] Local continue-watching checkpoints and resume row.
-- [x] GitHub Actions run #333 passed on commit `44e323d` (dependency audit, high-severity audit gate, lint, production build and all 21 Playwright smoke tests).
-- [ ] Latest feature preview smoke-tested on a real mobile device; browser-based screenshot audit and assistive-technology checks are still pending.
+- [x] P0 route/data/auth audit recorded in `docs/CHISPA_P0_AUDIT.md`; the local workspace remains canonical until a reversible cloud migration is proven.
+- [ ] Current feature head CI and manual device/accessibility verification remain to be checked for this contribution.
